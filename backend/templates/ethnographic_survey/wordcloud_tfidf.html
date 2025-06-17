@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Oral History: Word Cloud & TF-IDF{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Oral History Keyword Analysis</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="bg-white p-4 shadow rounded">
+    <h2 class="text-xl font-semibold mb-2">Word Cloud</h2>
+    <img src="data:image/png;base64,{{ wordcloud_base64 }}" alt="Word Cloud" class="rounded">
+  </div>
+  <div class="bg-white p-4 shadow rounded">
+    <h2 class="text-xl font-semibold mb-2">TF-IDF Top Keywords</h2>
+    {{ tfidf_plot_html|safe }}
+  </div>
+</div>
+{% endblock %}

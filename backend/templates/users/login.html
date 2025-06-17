@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-10 bg-white dark:bg-gray-900 p-6 rounded shadow">
+  <h2 class="text-2xl font-bold text-center mb-4">Login</h2>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="mb-4 text-red-600 text-sm">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <div class="mb-4">
+      {{ form.username.label_tag }}
+      {{ form.username }}
+      {% for error in form.username.errors %}
+        <p class="text-red-600 text-sm">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <div class="mb-4">
+      {{ form.password.label_tag }}
+      {{ form.password }}
+      {% for error in form.password.errors %}
+        <p class="text-red-600 text-sm">{{ error }}</p>
+      {% endfor %}
+    </div>
+    <div class="mb-4 flex items-center">
+        {{ form.remember_me }}
+        {{ form.remember_me.label_tag }}
+    </div>
+    <button class="w-full
+  bg-orange-500 
+  text-white 
+  px-6 py-2 
+  rounded-lg 
+  border-2 border-orange-600 
+  hover:bg-orange-600 
+  focus:outline-none focus:ring-2 focus:ring-orange-400 
+  active:bg-orange-700 
+  transition-colors duration-200
+  shadow-md hover:shadow-lg
+">
+      Login
+    </button>
+    {% if form.errors %}
+      <div class="text-red-500 mt-2">
+        {% for field in form %}
+          {% for error in field.errors %}
+            <p>{{ error }}</p>
+          {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+          <p>{{ error }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="mt-4 text-center">
+      <p class="text-sm text-gray-600 dark:text-white">
+        Don't have an account?
+        <a href="{% url 'users:register' %}" class="text-orange-600 hover:underline">Register</a>
+      </p>
+    </div>
+  </form>
+</div>
+{% endblock %}

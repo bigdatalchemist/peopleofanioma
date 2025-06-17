@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Diaspora Dashboard{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-10">
+  <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white mb-6">Anioma Diaspora Tracker</h1>
+
+  <!-- Search + Filter -->
+  <form method="get" class="mb-6 flex flex-wrap md:flex-nowrap gap-3 items-center">
+    <input type="text" name="q" placeholder="Search by name, city, or profession"
+           value="{{ query }}"
+           class="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+  
+    <select name="country"
+            class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      <option value="">All Countries</option>
+      {% for country in countries %}
+        <option value="{{ country }}" {% if country == country_filter %}selected{% endif %}>{{ country }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-md transition">
+      Search
+    </button>
+  </form>
+
+  <!-- Table -->
+  <div class="overflow-x-auto bg-white dark:bg-gray-900 shadow-md rounded-lg mb-8">
+    <table class="min-w-full text-left">
+      <thead class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
+        <tr>
+          <th class="p-3">Name</th>
+          <th class="p-3">Country</th>
+          <th class="p-3">City</th>
+          <th class="p-3">Profession</th>
+          <th class="p-3">Year</th>
+          <th class="p-3">Local Origin</th>
+          <th class="p-3">Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in page_obj %}
+        <tr class="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+          <td class="p-3">{{ entry.name }}</td>
+          <td class="p-3">{{ entry.country }}</td>
+          <td class="p-3">{{ entry.city }}</td>
+          <td class="p-3">{{ entry.profession }}</td>
+          <td class="p-3">{{ entry.year_migrated }}</td>
+          <td class="p-3">{{ entry.local_origin }}</td>
+          <td class="p-3">{{ entry.reason_for_migrating|truncatewords:12 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+    <div class="flex items-center gap-4 text-sm text-gray-700 dark:text-gray-300 mb-6">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}&country={{ country_filter }}"
+           class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+          ← Previous
+        </a>
+      {% endif %}
+      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&q={{ query }}&country={{ country_filter }}"
+           class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+          Next →
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <!-- Charts -->
+  <div class="my-12">
+    <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Diaspora by Country</h2>
+    <div id="countryChart"></div>
+  </div>
+
+  <div class="my-12">
+    <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Migration Trend by Year</h2>
+    <div id="yearChart"></div>
+  </div>
+
+  <!-- Export Buttons -->
+  <div class="flex flex-wrap gap-4 mt-8">
+    <a href="{% url 'export_data' 'csv' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded transition">
+      Export CSV
+    </a>
+    <a href="{% url 'export_data' 'xlsx' %}" class="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded transition">
+      Export Excel
+    </a>
+    <a href="{% url 'export_data' 'parquet' %}" class="bg-purple-500 hover:bg-purple-600 text-white px-5 py-2 rounded transition">
+      Export Parquet
+    </a>
+  </div>
+</div>
+
+<!-- Plotly Scripts -->
+<script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    const countryData = JSON.parse('{{ country_data|safe|escapejs }}');
+    const yearData = JSON.parse('{{ year_data|safe|escapejs }}');
+
+    Plotly.newPlot('countryChart', [{
+      x: countryData.map(d => d.country),
+      y: countryData.map(d => d.count),
+      type: 'bar',
+      marker: { color: '#6366F1' }
+    }], {
+      title: 'Diaspora Distribution by Country',
+      margin: { t: 40, b: 40 }
+    });
+
+    Plotly.newPlot('yearChart', [{
+      x: yearData.map(d => d.year_migrated),
+      y: yearData.map(d => d.count),
+      type: 'scatter',
+      mode: 'lines+markers',
+      marker: { color: '#10B981' }
+    }], {
+      title: 'Migration Over Time',
+      margin: { t: 40, b: 40 }
+    });
+  });
+</script>
+{% endblock %}

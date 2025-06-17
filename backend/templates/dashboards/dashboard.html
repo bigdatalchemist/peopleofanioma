@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Hero Section: Full Width Background -->
+<section id="hero" class="w-full bg-[url('/static/images/Anioma_culture.jpg')] bg-cover bg-center h-[400px] transition-all duration-700">
+</section>
+
+<!-- Blog Section -->
+<section class="fade-in-section opacity-0 bg-white py-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="italic text-2xl font-bold text-orange-700 dark:text-orange-400 mb-4 hover:text-orange-900 transition-colors duration-300">
+      Top Blog Posts
+    </h2>
+    <div class="grid gap-4 sm:gap-6 md:grid-cols-2">
+      {% for post in top_blog_posts %}
+        <div class="bg-white dark:bg-gray-900 p-5 rounded-lg shadow hover:shadow-lg transition">
+          <h3 class="italic text-xl font-semibold text-orange-600 dark:text-orange-400 hover:text-orange-800 transition-colors duration-300">
+            {{ post.title }}
+          </h3>
+          <p class="text-gray-600 dark:text-gray-300 mt-2 line-clamp-2">
+            {{ post.content|truncatewords:30 }}
+          </p>
+          <a href="{% url 'blog:blog_detail' post.slug %}" class="italic text-lg font-semibold text-orange-700 dark:text-orange-400 hover:text-orange-900 transition-colors duration-300">
+            Read more
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="mt-6 text-right">
+      <a href="{% url 'blog:blog_list' %}" class="italic inline-block bg-green-100 text-green-700 text-xl px-5 py-2 rounded-full font-semibold shadow-md hover:bg-green-600 hover:text-white hover:shadow-xl transition duration-300 ease-in-out ring-2 ring-yellow-300 hover:ring-yellow-500 focus:outline-none">
+        View All Blog Posts →
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Ethnographic Survey -->
+<section class="fade-in-section opacity-0 bg-white py-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="italic text-2xl font-bold text-orange-700 dark:text-orange-400 mb-4 hover:text-orange-900 transition-colors duration-300">
+      Ethnographic Survey
+    </h2>
+    <p class="text-black mb-4">
+      Contribute to the cultural documentation of Anioma by taking our ethnographic survey. Your insights help us preserve the heritage.
+    </p>
+
+    <a href="{% url 'ethnographic_survey:submit_survey' %}" class="italic 
+    inline-block 
+    bg-orange-500 
+    text-white px-6 py-2 
+    hover:bg-orange-700 
+    rounded-full 
+    transition-colors 
+    duration-300 
+    ease-in-out ring-2 
+    ring-green-300 
+    hover:ring-green-600 
+    focus:outline-none">
+      Take the Survey
+    </a>
+  </div>
+</section>
+
+<!-- Diaspora Tracker -->
+<section class="fade-in-section opacity-0 bg-white py-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="italic 
+    text-2xl font-bold
+     text-orange-700 
+     dark:text-orange-400 mb-4 
+     hover:text-orange-900 
+     transition-colors duration-300">
+      Diaspora Tracker
+    </h2>
+
+    <p class="text-gray-700 mb-4">
+      Are you an Anioma native abroad? Help us understand the migration patterns of our people by sharing your story.
+    </p>
+    <a href="{% url 'diaspora:diaspora_submit' %}" class="italic 
+    inline-block bg-orange-500 
+    text-white px-6 py-2 
+    hover:bg-orange-700 
+    rounded-full 
+    transition-colors duration-300
+     ease-in-out ring-2 
+     ring-green-300 
+     hover:ring-green-600 
+     focus:outline-none">
+      Submit Diaspora Info
+    </a>
+  </div>
+</section>
+
+<!-- Top Stories -->
+<section class="fade-in-section opacity-0 bg-white py-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="italic text-2xl font-bold text-orange-700 dark:text-orange-400 mb-4 hover:text-orange-900 transition-colors duration-300">Top Stories</h2>
+    <div class="grid gap-4 sm:gap-6 md:grid-cols-2">
+      {% for story in top_stories %}
+        <div class="bg-white dark:bg-gray-900 p-5 rounded-lg shadow hover:shadow-lg transition">
+          <h3 class="italic text-2xl font-bold text-orange-700 dark:text-orange-400 mb-4 hover:text-orange-900 transition-colors duration-300">{{ story.title }}</h3>
+          <p class="text-gray-600 dark:text-gray-300 mt-2 line-clamp-2">{{ story.content|truncatechars:100 }}</p>
+          <a href="{% url 'stories:story_detail' story.slug %}" class="italic font-bold text-orange-600 dark:text-orange-400 mb-4 hover:text-orange-900 transition-colors duration-300">
+            Read more
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="mt-6">
+      <a href="{% url 'stories:story_list' %}" class="italics text-orange-600 dark:text-orange-300 hover:underline transition-colors duration-300">
+        Browse All Stories
+      </a>
+      <span class="ml-4 text-sm text-gray-500 dark:text-gray-400">
+        | <a href="{% url 'users:login' %}" class="italics text-orange-600 dark:text-orange-300 hover:underline transition-colors duration-300">
+          Login
+        </a> to submit your story
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- Map Section -->
+<section class="fade-in-section opacity-0 bg-white py-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="italic text-2xl font-bold text-orange-700 dark:text-orange-400 mb-4 hover:text-orange-900 transition-colors duration-300">
+      Anioma Cultural Map
+    </h2>
+    {% include "maps/anioma_partial_map.html" %}
+  </div>
+</section>
+
+<div class="max-w-5xl mx-auto px-4 mt-10">
+  <!-- Combined Search and Category Filter -->
+  <div class="mb-10 bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+    <form action="{% url 'blog:blog_list' %}" method="get" class="flex flex-col md:flex-row gap-4 mb-6">
+      <div class="flex-grow">
+        <input type="text" 
+               name="q" 
+               value="{{ request.GET.q }}"
+               placeholder="Search posts..." 
+               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:text-white">
+      </div>
+      <div class="w-full md:w-64">
+        <select name="category" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:text-white">
+          <option value="">All Categories</option>
+          {% for value, label in categories.items %}
+            <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition">
+        Search
+      </button>
+    </form>
+
+    <!-- Category Quick Links -->
+    <div>
+      <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Browse by Category</h2>
+      <div class="flex flex-wrap gap-2">
+        <a href="{% url 'blog:blog_list' %}" 
+           class="px-3 py-1 rounded-full text-sm {% if not request.GET.category %}bg-orange-600 text-white{% else %}bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600{% endif %} transition">
+          All Posts
+        </a>
+        {% for value, label in categories.items %}
+          <a href="{% url 'blog:blog_list' %}?category={{ value }}"
+             class="px-3 py-1 rounded-full text-sm {% if request.GET.category == value %}bg-orange-600 text-white{% else %}bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600{% endif %} transition">
+            {{ label }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Rest of your dashboard content -->
+</div>
+
+<!-- Scroll Transition Script -->
+<script>
+  window.addEventListener('scroll', () => {
+    const hero = document.getElementById('hero');
+    if (window.scrollY > 200) {
+      hero.classList.remove('h-[400px]');
+      hero.classList.add('h-0', 'opacity-0');
+    } else {
+      hero.classList.remove('h-0', 'opacity-0');
+      hero.classList.add('h-[400px]');
+    }
+  });
+</script>
+
+{% endblock %}

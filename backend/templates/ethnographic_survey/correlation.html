@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Correlation Heatmap{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-12">
+  <h1 class="text-3xl font-extrabold text-indigo-700 mb-6 text-center">Correlation Heatmap</h1>
+
+  <div class="bg-white p-6 rounded-lg shadow overflow-x-auto">
+    {{ plot_div|safe }}
+  </div>
+</div>
+{% endblock %}

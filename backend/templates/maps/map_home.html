@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Anioma Cultural Map{% endblock %}
+
+{% block extra_head %}
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    #map {
+      min-height: 400px;
+      max-height: 70vh;
+      width: 100%;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <h1 class="text-2xl font-bold mb-4">Anioma Cultural Map</h1>
+  <div id="map" class="rounded-lg shadow"></div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      console.log("Map script loaded");
+
+      const map = L.map('map').setView([6.3, 6.35], 10);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+      }).addTo(map);
+
+      fetch("/static/geojson/anioma_lgas.geojson")
+        .then(response => {
+          if (!response.ok) throw new Error("GeoJSON fetch failed");
+          return response.json();
+        })
+        .then(data => {
+          L.geoJSON(data, {
+            style: {
+              color: "#2563eb",
+              weight: 2,
+              fillOpacity: 0.3
+            },
+            onEachFeature: function (feature, layer) {
+              layer.bindPopup(`<strong>${feature.properties.name}</strong>`);
+              layer.on({
+                mouseover: e => e.target.setStyle({ fillOpacity: 0.6 }),
+                mouseout: e => e.target.setStyle({ fillOpacity: 0.3 }),
+                click: () => layer.bindPopup(`<strong>${feature.properties.name}</strong>`).openPopup()
+              });
+            }
+          }).addTo(map);
+        })
+        .catch(error => {
+          console.error("Map error:", error);
+          alert("Could not load map.");
+        });
+    });
+  </script>
+{% endblock %}

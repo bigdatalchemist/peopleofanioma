@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load static %}
+{% load reaction_filter %}
+{% load custom_filter %}
+{% block title %}Blog – People of Anioma{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 mt-10">
+  {% include "blog/search_box.html" %}
+  <!-- Category Navigation (added at top) -->
+  <div class="mb-10">
+    <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Browse by Category</h2>
+    <div class="flex flex-wrap gap-2">
+      <a href="{% url 'blog:blog_list' %}" 
+         class="px-3 py-1 rounded-full {% if not current_category %}bg-orange-600 text-white{% else %}bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600{% endif %} transition">
+        All Posts
+      </a>
+      {% for value, label in categories.items %}
+        <a href="{% url 'blog:blog_list' %}?category={{ value }}"
+           class="px-3 py-1 rounded-full {% if current_category == value %}bg-orange-600 text-white{% else %}bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600{% endif %} transition">
+          {{ label }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <h1 class="text-3xl sm:text-4xl font-extrabold text-orange-600 dark:text-orange-300 mb-6 text-center">
+    People of Anioma Blog
+    {% if current_category %} - {{ categories|get_item:current_category }}{% endif %}
+  </h1>
+
+  {% if posts %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for post in posts %}
+        <article class="bg-white dark:bg-gray-900 rounded-lg shadow-md p-6 transition hover:shadow-lg">
+          <!-- Add category badge near title -->
+          <span class="inline-block px-2 py-1 mb-2 text-xs font-medium rounded-full 
+                      {% if post.category == 'spotlight' %}bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200
+                      {% elif post.category == 'news' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                      {% else %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200{% endif %}">
+            {{ post.get_category_display }}
+          </span>
+          
+          <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+            <a href="{% url 'blog:blog_detail' slug=post.slug %}" class="hover:text-blue-600 transition">
+              {{ post.title }}
+            </a>
+          </h2>
+          
+          <!-- Rest of your existing template remains exactly the same -->
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            By {{ post.author.name }} on {{ post.created_at|date:"F j, Y" }}
+          </p>
+
+          {% if post.image %}
+            <div class="flex justify-center mb-4">
+              <img src="{{ post.image.url }}"
+                   alt="{{ post.title }}"
+                   class="w-full max-w-2xl rounded-lg shadow object-cover">
+            </div>
+          {% endif %}
+
+          <p class="text-gray-700 dark:text-gray-300 mb-4">
+            {{ post.content|truncatechars:200 }}
+          </p>
+
+          {% if post.tags.exists %}
+            <div class="flex flex-wrap gap-2 mb-4">
+              {% for tag in post.tags.all %}
+                <span class="inline-block bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-white text-xs px-2 py-1 rounded-full">
+                  #{{ tag.name }}
+                </span>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <a href="{% url 'blog:blog_detail' slug=post.slug %}"
+             class="text-sm text-blue-600 hover:text-blue-800 hover:underline transition font-medium">
+            Read more →
+          </a>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-gray-600 dark:text-gray-300 mb-6 text-center">
+      {% if current_category %}
+        No posts found in {{ categories|get_item:current_category }} category.
+      {% else %}
+        No blog posts available at the moment.
+      {% endif %}
+    </p>
+  {% endif %}
+</div>
+{% endblock %}
+  <script>
+    // Optional: Add any JavaScript functionality here
+    document.addEventListener('DOMContentLoaded', function() {
+      // Example: Smooth scroll to top on page load
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+{% block extra_scripts %}{% endblock %}

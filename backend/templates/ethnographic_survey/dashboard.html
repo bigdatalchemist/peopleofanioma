@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block title %}Ethnographic Dashboard{% endblock %}
+
+{% block content %}
+  <h1 class="text-2xl font-bold mb-4">Ethnographic Survey Submissions</h1>
+
+  {% if surveys %}
+    <form method="get" class="mb-4">
+        <input type="text" name="q" placeholder="Search..." value="{{ query }}" class="p-2 border rounded w-64">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
+    </form>
+
+    <table class="min-w-full bg-white shadow rounded">
+      <thead class="bg-gray-200 text-gray-700">
+        <tr>
+          <th class="p-2">Name</th>
+          <th class="p-2">Age</th>
+          <th class="p-2">Gender</th>
+          <th class="p-2">Occupation</th>
+          <th class="p-2">Village</th>
+          <th class="p-2">LGA</th>
+          <th class="p-2">Current Location</th>
+          <th class="p-2">Cultural Practices</th>
+          <th class="p-2">Oral History</th>
+          <th class="p-2">Language Spoken</th>
+          <th class="p-2">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for survey in surveys.object_list %}
+        <tr class="border-t">
+          <td class="p-2">{{ survey.name }}</td>
+          <td class="p-2">{{ survey.age }}</td>
+          <td class="p-2">{{ survey.gender }}</td>
+          <td class="p-2">{{ survey.occupation }}</td>
+          <td class="p-2">{{ survey.village }}</td>
+          <td class="p-2">{{ survey.local_origin }}</td>
+          <td class="p-2">{{ survey.location }}</td>
+          <td class="p-2">{{ survey.cultural_practice }}</td>
+          <td class="p-2">{{ survey.oral_history }}</td>
+          <td class="p-2">{{ survey.language_spoken }}</td>
+          <td class="p-2">{{ survey.date_submitted|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="mt-6 flex justify-between items-center">
+        <div>
+            Page {{ surveys.number }} of {{ surveys.paginator.num_pages }}
+        </div>
+
+        <div class="space-x-2">
+            {% if surveys.has_previous %}
+                <a href="?{% if query %}q={{ query }}&{% endif %}page={{ surveys.previous_page_number }}" class="px-3 py-1 bg-gray-200 rounded">Previous</a>
+            {% endif %}
+
+            {% for num in surveys.paginator.page_range %}
+                {% if surveys.number == num %}
+                    <span class="px-3 py-1 bg-blue-500 text-white rounded">{{ num }}</span>
+                {% elif num > surveys.number|add:'-3' and num < surveys.number|add:'3' %}
+                    <a href="?{% if query %}q={{ query }}&{% endif %}page={{ num }}" class="px-3 py-1 bg-gray-100 rounded">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if surveys.has_next %}
+                <a href="?{% if query %}q={{ query }}&{% endif %}page={{ surveys.next_page_number }}" class="px-3 py-1 bg-gray-200 rounded">Next</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="flex space-x-4 mb-6">
+      <!-- CSV Export -->
+      <a href="{% url 'export_surveys' 'csv' %}" class="flex items-center bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+        </svg>
+          Export CSV
+      </a>
+
+      <!-- Excel Export -->
+      <a href="{% url 'export_surveys' 'excel' %}" class="flex items-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+        </svg>
+          Export Excel
+      </a>
+
+      <!-- Parquet Export -->
+      <a href="{% url 'export_surveys' 'parquet' %}" class="flex items-center bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded shadow">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+        </svg>
+        Export Parquet
+      </a>
+    </div>
+
+    <h2 class="text-xl font-semibold mt-10 mb-4">Visual Analytics</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white p-4 rounded shadow">
+        <canvas id="genderChart"></canvas>
+      </div>
+      <div class="bg-white p-4 rounded shadow">
+        <canvas id="villageChart"></canvas>
+      </div>
+      <div class="bg-white p-4 rounded shadow">
+        <canvas id="languageChart"></canvas>
+      </div>
+      <div class="bg-white p-4 rounded shadow">
+        <canvas id="submissionChart"></canvas>
+      </div>
+    </div>
+
+    <a href="{% url 'correlation_heatmap' %}" 
+      class="inline-flex items-center gap-2 mb-4 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" 
+           fill="none" viewBox="0 0 24 24" stroke-width="1.5" 
+           stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" 
+            d="M3 3v18h18M9 9l3 3-3 3m6 0l3-3-3-3" />
+      </svg>
+    View Correlation Heatmap
+    </a>
+
+    <a href="{% url 'wordcloud_and_tfidf' %}" class="inline-flex items-center bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 104 4H8V4zm5 8a5 5 0 10-6 4.9V16a1 1 0 001 1h6a1 1 0 001-1v-.1A5 5 0 0013 12z" clip-rule="evenodd" />
+        </svg>
+            Keyword Analysis
+    </a>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // Gender Chart
+      const genderData = {{ gender_data|safe }};
+      new Chart(document.getElementById('genderChart'), {
+        type: 'pie',
+        data: {
+          labels: genderData.map(e => e.label),
+          datasets: [{
+            data: genderData.map(e => e.count),
+            backgroundColor: ['#60a5fa', '#34d399', '#f87171']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { 
+            title: { display: true, text: 'Gender Distribution' },
+            legend: { position: 'bottom' }
+           }
+       }
+    });
+
+      // Village Chart
+      const villageData = {{ village_data|safe }};
+      new Chart(document.getElementById('villageChart'), {
+        type: 'bar',
+        data: {
+          labels: villageData.map(e => e.label),
+          datasets: [{
+            label: 'Count',
+            data: villageData.map(e => e.count),
+            backgroundColor: '#fbbf24'
+         }]
+        },
+        options: {
+          responsive: true,
+          plugins: { 
+            title: { display: true, text: 'Village Representation' },
+            legend: { display: false }
+           },
+          scales: {
+             x: { title: { display: true, text: 'Village' } },
+             y: { beginAtZero: true }
+          }
+        }
+      });
+
+      // Language Chart
+      const languageData = {{ language_data|safe }};
+      new Chart(document.getElementById('languageChart'), {
+        type: 'bar',
+        data: {
+          labels: languageData.map(e => e.label),
+          datasets: [{
+            label: 'Count',
+            data: languageData.map(e => e.count),
+            backgroundColor: '#a78bfa'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { 
+            title: { display: true, text: 'Languages Spoken' },
+            legend: { display: false }
+           },
+          scales: {
+            x: { title: { display: true, text: 'Language' } },
+            y: { beginAtZero: true }
+          }
+        }
+      });
+
+      // Submission Over Time Chart
+      const submissionData = {{ submission_data|safe }};
+      new Chart(document.getElementById('submissionChart'), {
+        type: 'line',
+        data: {
+          labels: submissionData.map(e => e.label),
+          datasets: [{
+            label: 'Submissions',
+            data: submissionData.map(e => e.count),
+            fill: true,
+            borderColor: '#4ade80',
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { 
+            title: { display: true, text: 'Submissions Over Time' },
+            legend: { display: false } 
+        },
+          scales: {
+            x: {
+              title: { display: true, text: 'Date' }
+            },
+            y: {
+              title: { display: true, text: 'Entries' },
+              beginAtZero: true
+           }
+         }
+        }
+      });
+    </script>
+  {% else %}
+    <p>No survey submissions yet.</p>
+  {% endif %}
+{% endblock %}

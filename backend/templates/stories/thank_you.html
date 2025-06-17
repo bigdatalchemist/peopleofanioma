@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-xl mx-auto px-4 py-16 text-center">
+    <div class="bg-green-100 border border-green-300 text-green-800 px-6 py-10 rounded-lg shadow">
+        <h2 class="text-3xl font-bold mb-4">Thank You for Your Submission!</h2>
+        <p class="text-lg">Your story has been submitted successfully and is now pending approval.</p>
+    </div>
+
+    <div class="mt-8">
+        <a href="{% url 'story_list' %}" class="inline-block text-indigo-600 hover:text-indigo-800 font-medium underline">
+            ← Back to Stories
+        </a>
+    </div>
+</div>
+{% endblock %}

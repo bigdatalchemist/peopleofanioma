@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-12">
+  <h1 class="text-3xl font-bold text-center mb-6">Submit a Story</h1>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-6 bg-white shadow p-8 rounded-lg">
+    {% csrf_token %}
+
+    <div>
+      <label for="{{ form.title.id_for_label }}" class="block font-semibold mb-1">Title</label>
+      {{ form.title|add_class:"w-full border border-gray-300 rounded-md shadow-sm p-2" }}
+    </div>
+
+    <div>
+      <label for="{{ form.author_name.id_for_label }}" class="block font-semibold mb-1">Author Name</label>
+      {{ form.author_name|add_class:"w-full border border-gray-300 rounded-md shadow-sm p-2" }}
+    </div>
+
+    <div>
+      <label for="{{ form.category.id_for_label }}" class="block font-semibold mb-1">Category</label>
+      {{ form.category|add_class:"w-full border border-gray-300 rounded-md shadow-sm p-2" }}
+    </div>
+
+    <div>
+      <label for="{{ form.content.id_for_label }}" class="block font-semibold mb-1">Content</label>
+      {{ form.content|add_class:"w-full border border-gray-300 rounded-md shadow-sm p-2 h-40" }}
+    </div>
+
+    <div>
+      <label for="{{ form.image.id_for_label }}" class="block font-semibold mb-1">Image (optional)</label>
+      {{ form.image|add_class:"w-full border border-gray-300 rounded-md shadow-sm p-2" }}
+    </div>
+
+    <div>
+      <label for="{{ form.audio.id_for_label }}" class="block font-semibold mb-1">Audio (optional)</label>
+      {{ form.audio|add_class:"w-full border border-gray-300 rounded-md shadow-sm p-2" }}
+    </div>
+
+      <!-- Voice Note Recording -->
+  <div class="mt-4">
+    <label class="block text-sm font-medium text-gray-700">Record a Voice Note</label>
+    <div class="flex gap-2 mt-2">
+      <button type="button" id="recordButton" class="bg-blue-600 text-white px-4 py-2 rounded">🎙 Start Recording</button>
+      <button type="button" id="stopButton" class="bg-red-600 text-white px-4 py-2 rounded" disabled>⏹ Stop</button>
+    </div>
+    <audio id="audioPreview" controls class="mt-3 hidden"></audio>
+    <input type="file" name="audio" id="audioInput" hidden>
+  </div>
+
+
+    <div class="text-center">
+      <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 transition">
+        Submit Story
+      </button>
+    </div>
+  </form>
+</div>
+<script>
+  let mediaRecorder;
+  let recordedChunks = [];
+
+  const recordButton = document.getElementById('recordButton');
+  const stopButton = document.getElementById('stopButton');
+  const audioPreview = document.getElementById('audioPreview');
+  const audioInput = document.getElementById('audioInput');
+
+  recordButton.addEventListener('click', async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recordedChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = event => {
+      if (event.data.size > 0) recordedChunks.push(event.data);
+    };
+
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+      const audioURL = URL.createObjectURL(blob);
+      audioPreview.src = audioURL;
+      audioPreview.classList.remove('hidden');
+
+      // Create a file object and inject it into the hidden input
+      const file = new File([blob], 'recording.webm', { type: 'audio/webm' });
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      audioInput.files = dataTransfer.files;
+    };
+
+    mediaRecorder.start();
+    recordButton.disabled = true;
+    stopButton.disabled = false;
+  });
+
+  stopButton.addEventListener('click', () => {
+    mediaRecorder.stop();
+    recordButton.disabled = false;
+    stopButton.disabled = true;
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% for reply in replies %}
+<div class="border-l-2 border-gray-300 dark:border-gray-600 pl-3 mb-3">
+  <p class="text-sm">
+    <span class="font-medium text-gray-800 dark:text-gray-300">{{ reply.user.username }}</span>
+    <span class="text-gray-600 dark:text-gray-400">{{ reply.content }}</span>
+  </p>
+  <p class="text-xs text-gray-500 dark:text-gray-400">{{ reply.created_at|timesince }} ago</p>
+</div>
+{% endfor %}

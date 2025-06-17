@@ -1,0 +1,29 @@
+{% load reaction_filter %}
+<div class="flex gap-2 my-4">
+  <button class="reaction-btn hover:scale-110 transition" 
+          data-post-id="{{ post.id }}" 
+          data-reaction="like">
+    👍 {{ post|reaction_count:'like' }}
+  </button>
+  <button class="reaction-btn hover:scale-110 transition" 
+          data-post-id="{{ post.id }}" 
+          data-reaction="love">
+    ❤️ {{ post|reaction_count:'love' }} 
+  </button>
+  <button class="reaction-btn hover:scale-110 transition" 
+          data-post-id="{{ post.id }}" 
+          data-reaction="laugh">
+    😆 {{ post|reaction_count:'laugh' }} 
+  </button>
+  <!-- Add more reactions as needed -->
+   <button class="reaction-btn hover:scale-110 transition" 
+          data-post-id="{{ post.id }}" 
+          data-reaction="clap">
+    👏 {{ post|reaction_count:'clap' }} 
+  </button>
+  <button class="reaction-btn hover:scale-110 transition" 
+          data-post-id="{{ post.id }}" 
+          data-reaction="insightful">
+    💡  {{ post|reaction_count:'insightful' }} 
+  </button>
+</div>

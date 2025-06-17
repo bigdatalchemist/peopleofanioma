@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% load static %}
+{% load reaction_filter %}
+
+{% block title %}{{ post.title }} – People of Anioma{% endblock %}
+{% block content %}
+  <article class="max-w-3xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-md p-6 mt-8 transition">
+    <!-- Add category badge below the title -->
+    <div class="mb-4 flex items-center gap-4">
+      <span class="inline-block px-3 py-1 rounded-full text-sm font-medium
+                  {% if post.category == 'spotlight' %}bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200
+                  {% elif post.category == 'news' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                  {% elif post.category == 'history' %}bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200
+                  {% else %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200{% endif %}">
+        {{ post.get_category_display }}
+      </span>
+      <a href="{% url 'blog:blog_list' %}?category={{ post.category }}" 
+         class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition">
+        View all in {{ post.get_category_display }}
+      </a>
+    </div>
+
+    <h1 class="text-4xl font-extrabold mb-4 text-gray-900 dark:text-white">{{ post.title }}</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+      By {{ post.author.name }} on {{ post.created_at|date:"F j, Y" }}
+    </p>
+
+    {% if post.image %}
+      <div class="flex justify-center my-6">
+        <img src="{{ post.image.url }}"
+             alt="{{ post.title }}"
+             class="w-full max-w-2xl rounded-lg shadow-lg object-cover fade-in transition">
+      </div>
+    {% endif %}
+
+    <div class="prose text-lg lg:prose-2xl max-w-none text-gray-800 dark:text-gray-200 mb-10 leading-relaxed">
+      {{ post.content|linebreaksbr|safe }}
+    </div>
+
+    <!-- Rest of your template remains exactly the same -->
+    <div class="flex items-center mb-8">
+      {% if post.author.photo %}
+        <img src="{{ post.author.photo.url }}" alt="{{ post.author.name }}"
+             class="w-16 h-16 rounded-full mr-4 object-cover shadow-sm">
+      {% endif %}
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{{ post.author.name }}</h3>
+        <p class="text-gray-600 dark:text-gray-400 text-sm">{{ post.author.bio }}</p>
+      </div>
+    </div>
+
+    {% if post.tags.exists %}
+      <div class="mb-6">
+        {% for tag in post.tags.all %}
+          <span class="inline-block bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-white text-xs px-3 py-1 rounded-full mr-2 mb-2 shadow-sm">
+            #{{ tag.name }}
+          </span>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Reaction buttons -->
+    <div class="flex gap-4 my-6" id="reaction-counts">
+      {% include 'blog/reaction_counts.html' %}
+    </div>
+
+    <!-- Comment section -->
+    <div id="comments-section" class="mt-8">
+      {% include 'blog/comments.html' %}
+    </div>
+
+    <!-- Comment form -->
+    <form id="comment-form" data-post-id="{{ post.id }}" class="mt-6">
+      {% csrf_token %}
+      <textarea id="comment-input" required class="w-full p-3 border dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200" placeholder="Add a comment..."></textarea>
+      <button type="submit" class="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition">Comment</button>
+    </form>
+
+    <a href="{% url 'blog:blog_list' %}" class="inline-block text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition text-sm mt-6">
+      ← Back to all posts
+    </a>
+  </article>
+
+  <script>
+  // CSRF Setup for AJAX
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  // ---- 1. Submit Reaction
+  $(document).on('click', '.reaction-btn', function () {
+    const postId = $(this).data('post-id');
+    const reactionType = $(this).data('reaction');
+
+    $.ajax({
+      url: `/blog/${postId}/react/`,
+      type: 'POST',
+      data: {
+        'reaction': reactionType,
+        'csrfmiddlewaretoken': csrftoken,
+      },
+      success: function (response) {
+        $('#reaction-counts').html(response.reaction_html);
+      },
+      error: function(xhr, status, error) {
+        console.error("Error submitting reaction:", error);
+      }
+    });
+  });
+
+  // ---- 2. Submit New Comment
+  $('#comment-form').on('submit', function (e) {
+    e.preventDefault();
+    const postId = $(this).data('post-id');
+    const content = $('#comment-input').val().trim();
+
+    if (!content) return;
+
+    $.ajax({
+      url: `/blog/${postId}/comment/`,
+      type: 'POST',
+      data: {
+        'content': content,
+        'csrfmiddlewaretoken': csrftoken,
+      },
+      success: function (response) {
+        $('#comments-section').html(response.comments_html);
+        $('#comment-input').val('');
+      },
+      error: function(xhr, status, error) {
+        console.error("Error submitting comment:", error);
+      }
+    });
+  });
+
+  // ---- 3. Submit Reply to Comment
+  $(document).on('submit', '.reply-form', function (e) {
+    e.preventDefault();
+    const form = $(this);
+    const commentId = form.data('comment-id');
+    const content = form.find('.reply-input').val().trim();
+
+    if (!content) return;
+
+    $.ajax({
+      url: `/blog/comment/${commentId}/reply/`,
+      type: 'POST',
+      data: {
+        'content': content,
+        'csrfmiddlewaretoken': csrftoken,
+      },
+      success: function (response) {
+        $(`#replies-${commentId}`).html(response.replies_html);
+        form.find('.reply-input').val('');
+      },
+      error: function(xhr, status, error) {
+        console.error("Error submitting reply:", error);
+      }
+    });
+  });
+  </script>
+{% endblock %}

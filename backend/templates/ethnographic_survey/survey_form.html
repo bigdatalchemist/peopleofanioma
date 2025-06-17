@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block title %}Ethnographic Survey Submission{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4 text-center text-orange-600">Submit Ethnographic Survey</h1>
+
+<form method="post" class="space-y-4 bg-white dark:bg-gray-900 p-6 rounded shadow max-w-xl mx-auto">
+  {% csrf_token %}
+
+  {{ form.non_field_errors }}
+
+  <div>
+    {{ form.name.label_tag }}
+    {{ form.name|add_class:"w-full p-2 border rounded placeholder-gray-500" }}
+  </div>
+
+  <div>
+    {{ form.age.label_tag }}
+    {{ form.age|add_class:"w-full p-2 border rounded placeholder-gray-500" }}
+  </div>
+
+  <div>
+    {{ form.gender.label_tag }}
+    {{ form.gender|add_class:"w-full p-2 border rounded placeholder-gray-500" }}
+  </div>
+
+  <div>
+    {{ form.occupation.label_tag }}
+    {{ form.occupation|add_class:"w-full p-2 border rounded placeholder-gray-500" }}
+  </div>
+
+  <div>
+    {{ form.village.label_tag }}
+    {{ form.village|add_class:"w-full p-2 border rounded placeholder-gray-500" }}
+  </div>
+
+  <div>
+    {{ form.local_origin.label_tag }}
+    {{ form.local_origin|add_class:"w-full p-2 border rounded placeholder-gray-500" }}
+  </div>
+
+  <div>
+    {{ form.location.label_tag }}
+    {{ form.location|add_class:"w-full p-2 border rounded placeholder-gray-500" }}
+  </div>
+
+  <div>
+    {{ form.cultural_practice.label_tag }}
+    {{ form.cultural_practice|add_class:"w-full p-2 border rounded placeholder-gray-500" }}
+  </div>
+
+  <div>
+    {{ form.oral_history.label_tag }}
+    {{ form.oral_history|add_class:"w-full p-2 border rounded placeholder-gray-500" }}
+  </div>
+
+  <div>
+    {{ form.language_spoken.label_tag }}
+    {{ form.language_spoken|add_class:"w-full p-2 border rounded placeholder-gray-500" }}
+  </div>
+
+  <button type="submit" class="w-full bg-orange-600 text-white px-4 py-2 rounded">Submit</button>
+</form>
+{% endblock %}

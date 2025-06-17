@@ -1,0 +1,32 @@
+{% extends "base.html" %}  
+
+{% block title %}Submit Diaspora Entry{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-10">
+  <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white mb-6 text-center">
+    Submit Your Diaspora Info
+  </h1>
+
+  <form method="post" class="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+    {% csrf_token %}
+    
+        {% for field in form %}
+    <div class="mb-4">
+        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+            {{ field.label }}
+        </label>
+        {{ field }}
+        {% if field.errors %}
+        <p class="mt-1 text-sm text-red-600">{{ field.errors.as_text }}</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <button type="submit"
+            class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-4 rounded-md transition duration-150 ease-in-out">
+      Submit
+    </button>
+  </form>
+</div>
+{% endblock %}

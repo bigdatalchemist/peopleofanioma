@@ -1,0 +1,23 @@
+# Python
+*.pyc
+__pycache__/
+
+# Virtualenv
+venv/
+backend/.env
+.env.*
+
+# Django
+db.sqlite3
+/media
+/staticfiles
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# TailwindCSS output
+backend/static/css/tailwind.css

@@ -1,0 +1,16 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Oshimili North",
+        "code": "ON"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[6.35, 6.25], [6.40, 6.30], [6.37, 6.35], [6.32, 6.33], [6.35, 6.25]]]
+      }
+    }
+  ]
+}

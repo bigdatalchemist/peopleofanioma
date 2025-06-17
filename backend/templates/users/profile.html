@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Profile Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+  <!-- Profile Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-6">
+    <div class="flex items-center gap-4">
+      <!-- Profile Picture Dropdown -->
+    <div class="relative">
+        <img src="{{ user.profile_picture_url }}" 
+            id="profile-picture" 
+            class="w-20 h-20 rounded-full object-cover border-2 border-orange-500 cursor-pointer">
+        
+        <div id="profile-dropdown" class="hidden absolute z-10 mt-2 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-md">
+            <a href="{{ user.profile_picture.url }}" target="_blank" 
+              class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">View</a>
+            <a href="{% url 'users:update_profile_pic' %}" 
+              class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Change</a>
+            <a href="{% url 'users:delete_profile_pic' %}" 
+              class="block px-4 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700">Delete</a>
+        </div>
+    </div>
+      
+      <div>
+        <h1 class="text-2xl font-bold">{{ user.username }}
+          {% if user.is_verified %}<span class="text-blue-500 text-sm">✓</span>{% endif %}
+        </h1>
+        <div class="flex items-center gap-2">
+          <p class="text-gray-600 dark:text-gray-400">
+            {{ user.bio|default:"No bio yet" }}
+          </p>
+          <a href="{% url 'users:edit_bio' %}" class="text-orange-500 hover:text-orange-700 text-sm">Edit bio</a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Dropdown Menu -->
+    <div class="relative">
+    <button id="menu-button" class="flex items-center gap-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
+        Menu <i class="fas fa-chevron-down text-xs"></i>
+    </button>
+    
+    <div id="menu-dropdown" class="hidden absolute right-0 z-10 mt-2 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-md">
+        <a href="{% url 'diaspora:diaspora_submit' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Diaspora Tracker</a>
+        <a href="{% url 'ethnographic_survey:submit_survey' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Ethnographic Survey</a>
+        <div class="border-t border-gray-200 dark:border-gray-700"></div>
+        
+        <!-- Secure Logout Form -->
+        <form method="post" action="{% url 'users:logout' %}" class="w-full">
+            {% csrf_token %}
+            <button type="submit" class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+                Logout
+            </button>
+        </form>
+    </div>
+</div>
+  </div>
+
+  <!-- Dashboard Sections -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content Column -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Approved Stories -->
+      <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold">Your Approved Stories</h2>
+          <a href="{% url 'stories:submit_story' %}" class="btn-primary">
+            + New Story
+          </a>
+        </div>
+
+        {% if approved_stories %}
+          <div class="grid grid-cols-1 gap-4">
+            {% for story in approved_stories %}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+              <a href="{% url 'stories:story_detail' story.slug %}" class="hover:text-orange-500">
+                <h3 class="font-bold text-lg">{{ story.title }}</h3>
+              </a>
+              <p class="text-sm text-gray-500 mb-2">
+                {{ story.created_at|date:"M d, Y" }} • 
+                <span class="text-green-600">Approved</span>
+              </p>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-gray-500 py-4">You don't have any approved stories yet.</p>
+        {% endif %}
+      </section>
+    </div>
+
+    <!-- Sidebar Column - Now moved to dropdown -->
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Profile picture dropdown
+    const profilePic = document.getElementById('profile-picture');
+    const profileDropdown = document.getElementById('profile-dropdown');
+    
+    // Menu button dropdown
+    const menuButton = document.getElementById('menu-button');
+    const menuDropdown = document.getElementById('menu-dropdown');
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!profilePic.contains(e.target) && !profileDropdown.contains(e.target)) {
+            profileDropdown.classList.add('hidden');
+        }
+        if (!menuButton.contains(e.target) && !menuDropdown.contains(e.target)) {
+            menuDropdown.classList.add('hidden');
+        }
+    });
+    
+    // Toggle profile dropdown
+    profilePic.addEventListener('click', function(e) {
+        e.stopPropagation();
+        profileDropdown.classList.toggle('hidden');
+        menuDropdown.classList.add('hidden'); // Close menu if open
+    });
+    
+    // Toggle menu dropdown
+    menuButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menuDropdown.classList.toggle('hidden');
+        profileDropdown.classList.add('hidden'); // Close profile if open
+    });
+});
+</script>
+{% endblock %}
