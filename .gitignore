@@ -2,22 +2,36 @@
 *.pyc
 __pycache__/
 
-# Virtualenv
+# Virtual Environment
 venv/
-backend/.env
-.env.*
 
 # Django
 db.sqlite3
-/media
-/staticfiles
+*.sqlite3
+/media/
+/staticfiles/
+.env
+.env.*
+!.env.example
 
-# OS
+# Environment
+backend/.env
+*.env
+
+# VS Code
+.vscode/
+
+# System
 .DS_Store
 Thumbs.db
 
-# VSCode
-.vscode/
-
-# TailwindCSS output
+# Tailwind CSS output
 backend/static/css/tailwind.css
+backend/static/images/
+
+# Logs
+*.log
+
+# Coverage reports
+htmlcov/
+.coverage
