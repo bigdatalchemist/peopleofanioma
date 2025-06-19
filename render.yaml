@@ -8,6 +8,8 @@ services:
       python backend/manage.py collectstatic --noinput
     startCommand: gunicorn anioma_core.wsgi:application
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.10
       - key: DJANGO_SETTINGS_MODULE
         value: anioma_core.settings
       - key: SECRET_KEY
