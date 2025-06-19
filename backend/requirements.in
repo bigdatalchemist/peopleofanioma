@@ -8,7 +8,6 @@ XlsxWriter
 annotated-types
 asgiref
 astroid
-black
 blis
 branca
 catalogue
@@ -17,7 +16,6 @@ charset-normalizer
 click
 cloudpathlib
 colorama
-comtypes
 confection
 contourpy
 cycler
@@ -43,7 +41,6 @@ geopandas
 huggingface-hub
 idna
 inflection
-isort
 joblib
 kiwisolver
 langcodes
@@ -77,10 +74,8 @@ pyarrow
 pydantic
 pydantic_core
 pydub
-pylint
 pyogrio
 pyparsing
-pypiwin32
 pyproj
 python-dateutil
 python-decouple
@@ -88,13 +83,11 @@ python-docx
 python-dotenv
 pyttsx3
 pytz
-pywin32
 regex
 requests
 rich
 safetensors
 scikit-learn
-scipy
 sentence-transformers
 shapely
 shellingham
