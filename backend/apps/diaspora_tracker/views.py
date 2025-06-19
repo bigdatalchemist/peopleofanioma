@@ -56,7 +56,7 @@ def submit_entry(request):
         form = DiasporaEntryForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('diaspora_thank_you')
+            return redirect('diaspora:diaspora_thank_you')
     else:
         form = DiasporaEntryForm()
 

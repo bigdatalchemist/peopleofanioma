@@ -8,6 +8,8 @@ from .utils.moderation import auto_moderate_story
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.contrib import messages
+from django.http import HttpResponseForbidden
 
 @login_required
 
@@ -60,7 +62,7 @@ def submit_story(request):
                 story.is_approved = False  # Requires admin review
 
             story.save()
-            return redirect('story_thank_you')
+            return redirect('stories:story_thank_you')
     else:
         form = StoryForm()
     return render(request, 'stories/submit_story.html', {'form': form})
@@ -93,8 +95,36 @@ def add_comment(request, slug):
         content = request.POST.get('content')
         if content:
             Comment.objects.create(story=story, user=request.user, content=content)
-        return redirect('story_detail', slug=slug)
+        return redirect('stories:story_detail', slug=slug)
 
 
 def thank_you(request):
     return render(request, 'stories/thank_you.html')
+
+@login_required
+def edit_story(request, slug):
+    story = get_object_or_404(Story, slug=slug, user=request.user)
+    if request.method == 'POST':
+        form = StoryForm(request.POST, request.FILES, instance=story)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Story updated successfully.")
+            return redirect('stories:story_detail', slug=story.slug)
+    else:
+        form = StoryForm(instance=story)
+    return render(request, 'stories/edit_story.html', {'form': form, 'story': story})
+
+
+@login_required
+def delete_story(request, slug):
+    story = get_object_or_404(Story, slug=slug)
+
+    if story.user != request.user:
+        return HttpResponseForbidden("You are not allowed to delete this story.")
+
+    if request.method == 'POST':
+        story.delete()
+        messages.success(request, "Story deleted successfully.")
+        return redirect('users:profile')
+
+    return render(request, 'stories/confirm_delete.html', {'story': story})

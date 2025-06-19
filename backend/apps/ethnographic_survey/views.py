@@ -21,7 +21,7 @@ def survey_form(request):
         form = EthnographicSurveyForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('thank_you')
+            return redirect('ethnographic_survey:thank_you')
     else:
         form = EthnographicSurveyForm()
     return render(request, 'ethnographic_survey/survey_form.html', {'form': form})

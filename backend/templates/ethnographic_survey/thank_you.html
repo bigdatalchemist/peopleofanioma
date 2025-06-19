@@ -2,7 +2,9 @@
 {% block title %}Thank You{% endblock %}
 
 {% block content %}
+<div class="max-w-4xl mx-auto p-9 space-y-10 min-h-[67vh]">
   <h1 class="text-2xl font-bold text-green-700">Thank you!</h1>
   <p>Your ethnographic survey response has been submitted successfully.</p>
-  <a href="{% url 'dashboard' %}" class="text-blue-600 underline mt-4 inline-block">View Submissions</a>
+  <a href="{% url 'users:profile' %}" class="text-blue-600 underline mt-4 inline-block">Back To Dashboard</a>
+</div>
 {% endblock %}

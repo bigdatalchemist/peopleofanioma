@@ -30,7 +30,7 @@
 
                 {% if story.slug %}
                     <h2 class="text-xl font-semibold text-indigo-700 hover:text-indigo-900 transition duration-200">
-                        <a href="{% url 'story_detail' story.slug %}" class="hover:underline">
+                        <a href="{% url 'stories:story_detail' story.slug %}" class="hover:underline">
                             {{ story.title }}
                         </a>
                     </h2>
@@ -49,12 +49,12 @@
                 </p>
 
                 {% if story.slug %}
-                    <a href="{% url 'story_detail' story.slug %}"
+                    <a href="{% url 'stories:story_detail' story.slug %}"
                        class="inline-block text-indigo-600 hover:text-indigo-800 hover:underline font-medium">
                         Read More →
                     </a>
 
-                    <a href="{% url 'story_detail' story.slug %}#share"
+                    <a href="{% url 'stories:story_detail' story.slug %}#share"
                        class="inline-block ml-4 text-sm text-indigo-600 hover:underline">
                         Share →
                     </a>

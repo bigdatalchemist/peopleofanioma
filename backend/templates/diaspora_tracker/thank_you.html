@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Thank You{% endblock %}
 {% block content %}
-<div class="max-w-xl mx-auto px-4 py-16 text-center">
+<div class="max-w-xl mx-auto px-4 py-16 text-center min-h-[67vh]">
   <h1 class="text-3xl font-extrabold text-green-600 mb-4">Thank you!</h1>
   <p class="text-lg text-gray-700 mb-6">
     Your diaspora information has been successfully submitted.
   </p>
-  <a href="{% url 'diaspora_dashboard' %}"
-     class="inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+  <a href="{% url 'users:profile' %}"
+     class="inline-block bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600 transition">
     Go back to Dashboard
   </a>
 </div>

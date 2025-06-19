@@ -5,7 +5,7 @@ from .models import Story
 @admin.register(Story)
 class StoryAdmin(admin.ModelAdmin):
     list_display = ('title', 'author_name', 'is_approved', 'date_submitted')
-    list_filter = ('is_approved', 'category')
+    list_filter = ('is_approved', 'title', 'author_name')
     search_fields = ('title', 'author_name')
     actions = ['approve_selected']
 

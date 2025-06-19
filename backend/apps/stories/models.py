@@ -6,6 +6,7 @@ import os
 from django.core.files.base import ContentFile
 from pydub import AudioSegment
 from io import BytesIO
+import itertools
 
 
 
@@ -19,7 +20,6 @@ class Story(models.Model):
     slug = models.SlugField(unique=True, blank=True)
     author_name = models.CharField(max_length=100)
     content = models.TextField()
-    category = models.CharField(max_length=100)
     image = models.ImageField(upload_to='story_images/', blank=True, null=True)
     audio = models.FileField(upload_to='story_audio/', blank=True, null=True)
     is_approved = models.BooleanField(default=False)
@@ -29,7 +29,12 @@ class Story(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            base_slug = slugify(self.title)
+            self.slug = base_slug
+            for i in itertools.count(1):
+                if not Story.objects.filter(slug=self.slug).exists():
+                    break
+                self.slug = f"{base_slug}-{i}"
 
         if self.audio and self.audio.name.endswith('.webm'):
             self.audio.seek(0)
@@ -48,10 +53,10 @@ class Story(models.Model):
 
 
 class Comment(models.Model):
-    story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name='story_comments')
+    story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, related_name='story_comments')
+        on_delete=models.CASCADE, related_name='comments')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 

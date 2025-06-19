@@ -6,6 +6,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from apps.diaspora_tracker.forms import DiasporaEntryForm
 from apps.stories.forms import StoryForm
+from apps.stories.models import Story
 from django.views.generic.edit import UpdateView
 from django.urls import reverse_lazy
 from django.contrib import messages
@@ -53,6 +54,7 @@ def profile(request):
         'approved_stories': request.user.approved_stories(),
         'diaspora_entries': request.user.diaspora_entries(),
         'diaspora_tracker_url': reverse_lazy('diaspora_tracker'),
+        'user_stories': Story.objects.filter(user=request.user).order_by('-date_submitted'), 
     }
     return render(request, 'users/profile.html', context)
 

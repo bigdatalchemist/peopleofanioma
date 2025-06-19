@@ -61,6 +61,11 @@
             <p class="text-gray-500 text-sm">No comments yet. Be the first to comment!</p>
         {% endif %}
     </div>
+    {% if story.user == request.user %}
+  <a href="{% url 'stories:edit_story' story.slug %}">Edit</a>
+  <a href="{% url 'stories:delete_story' story.slug %}">Delete</a>
+{% endif %}
+
 
         <!-- Social Sharing Section -->
          <!-- Native Share (for mobile support) -->

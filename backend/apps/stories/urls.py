@@ -11,5 +11,8 @@ urlpatterns = [
     path('<slug:slug>/like/', views.like_story, name='like_story'),
     path('<slug:slug>/upvote/', views.upvote_story, name='upvote_story'),
     path('<slug:slug>/comment/', views.add_comment, name='add_comment'),
+    path('<slug:slug>/edit/', views.edit_story, name='edit_story'),
+    path('<slug:slug>/delete/', views.delete_story, name='delete_story'),
+
     
 ]
