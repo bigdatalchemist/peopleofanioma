@@ -15,28 +15,26 @@ services:
       - key: DJANGO_SETTINGS_MODULE
         value: backend.anioma_core.settings
       - key: SECRET_KEY
-        value: your-actual-secret-key
+      - key: DB_PASSWORD
       - key: DEBUG
-        value: False
+        value: "False"
       - key: ALLOWED_HOSTS
-        value: yourdomain.com,render.com
+        value: "yourdomain.com,www.yourdomain.com,*.onrender.com,localhost"
       - key: DB_ENGINE
         value: postgres
       - key: DB_NAME
-        value: your_db_name_from_render
+        value: your_db_name
       - key: DB_USER
-        value: your_db_user_from_render
-      - key: DB_PASSWORD
-        value: your_db_password_from_render
+        value: your_db_user
       - key: DB_HOST
-        value: your_db_host_from_render
+        value: your-db-service-name
       - key: DB_PORT
         value: 5432
       - key: CSRF_TRUSTED_ORIGINS
-        value: https://yourdomain.com,https://www.yourdomain.com
+        value: "https://yourdomain.com,https://www.yourdomain.com,https://*.onrender.com"
       - key: SECURE_SSL_REDIRECT
-        value: True
+        value: "True"
       - key: SESSION_COOKIE_SECURE
-        value: True
+        value: "True"
       - key: CSRF_COOKIE_SECURE
-        value: True
+        value: "True"

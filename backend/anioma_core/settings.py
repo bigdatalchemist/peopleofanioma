@@ -23,21 +23,32 @@ if NLTK_DATA_PATH not in nltk.data.path:
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Detect which .env file to use
-ENV_FILE = os.environ.get("DJANGO_DOTENV", BASE_DIR / ".env")
-config = Config(RepositoryEnv(str(ENV_FILE)))
+# Environment configuration
+def get_config():
+    try:
+        return {
+            'SECRET_KEY': os.environ['SECRET_KEY'],  # Will crash if missing (good!)
+            'DEBUG': os.environ.get('DEBUG', '') == 'true', # Only true if explicitly set
+            'ALLOWED_HOSTS': os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(','),
+        }
+    except KeyError as e:
+        # Local development fallback
+        ENV_FILE = BASE_DIR / ".env"
+        if ENV_FILE.exists():
+            config = Config(RepositoryEnv(str(ENV_FILE)))
+            return {
+                'SECRET_KEY': config('SECRET_KEY'),
+                'DEBUG': config('DEBUG', default=False, cast=bool),
+                'ALLOWED_HOSTS': config('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(','),
+            }
+        raise RuntimeError(f"Missing required environment variable: {e}")
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+CONFIG = get_config()
 
-# SECURITY WARNING: keep the secret key used in production secret!
-
-SECRET_KEY = config("SECRET_KEY", default="unsafe-secret")
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DEBUG", default=True, cast=bool)
-
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1').split(',')
+# Now use CONFIG throughout your settings
+SECRET_KEY = CONFIG['SECRET_KEY']
+DEBUG = CONFIG['DEBUG']
+ALLOWED_HOSTS = CONFIG['ALLOWED_HOSTS']
 
 
 # Application definition
