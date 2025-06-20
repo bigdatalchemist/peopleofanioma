@@ -4,13 +4,11 @@ services:
     env: python
     plan: free
     buildCommand: |
-      export PYTHONPATH=/opt/render/project/src/backend:$PYTHONPATH
-      cd /opt/render/project/src
       python -m pip install --upgrade pip setuptools==68.0.0 wheel
       pip install -e .
       pip install -r backend/requirements.txt
       python backend/manage.py collectstatic --noinput
-    startCommand: gunicorn backend.anioma_core.wsgi:application --pythonpath /opt/render/project/src
+    startCommand: gunicorn backend.anioma_core.wsgi:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.13
