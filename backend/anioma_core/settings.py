@@ -102,7 +102,7 @@ REST_FRAMEWORK = {
 }
 
 
-ROOT_URLCONF = "anioma_core.urls"
+ROOT_URLCONF = "backend.anioma_core.urls"
 
 TEMPLATES = [
     {
@@ -120,7 +120,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "anioma_core.wsgi.application"
+WSGI_APPLICATION = "backend.anioma_core.wsgi.application"
 
 
 # Database

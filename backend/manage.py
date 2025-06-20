@@ -10,7 +10,7 @@ nltk.download('punkt_tab')
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "anioma_core.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.anioma_core.settings")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

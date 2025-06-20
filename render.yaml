@@ -15,7 +15,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.10.13
       - key: DJANGO_SETTINGS_MODULE
-        value: anioma_core.settings
+        value: backend.anioma_core.settings
       - key: SECRET_KEY
         value: your-actual-secret-key
       - key: DEBUG
