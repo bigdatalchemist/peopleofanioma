@@ -8,7 +8,7 @@ services:
       pip install -e .
       pip install -r backend/requirements.txt
       python backend/manage.py collectstatic --noinput
-    startCommand: gunicorn anioma_core.wsgi:application
+    startCommand: gunicorn backend.anioma_core.wsgi:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.13
