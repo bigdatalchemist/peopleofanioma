@@ -4,7 +4,8 @@ services:
     env: python
     plan: free
     buildCommand: |
-      python -m pip install --upgrade pip setuptools wheel
+      python -m pip install --upgrade pip setuptools==68.0.0 wheel
+      pip install -e .
       pip install -r backend/requirements.txt
       python backend/manage.py collectstatic --noinput
     startCommand: gunicorn anioma_core.wsgi:application
