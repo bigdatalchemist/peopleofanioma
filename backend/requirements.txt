@@ -211,8 +211,6 @@ pydantic-core==2.33.2
 pyparsing==3.2.3
     # via matplotlib
 pypdf2==3.0.1
-    # via -r backend/requirements.in
-pypiwin32==223
     # via pyttsx3
 pyproj==3.7.1
     # via geopandas
@@ -232,7 +230,6 @@ pytz==2025.2
     # via
     #   drf-yasg
     #   pandas
-pywin32==310
     # via
     #   pypiwin32
     #   pyttsx3
