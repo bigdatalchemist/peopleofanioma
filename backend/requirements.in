@@ -46,3 +46,4 @@ PyYAML==6.0.1
 # Geo & NLP support
 geopandas==0.13.2
 django-browser-reload==1.18.0
+pydub==0.25.1
