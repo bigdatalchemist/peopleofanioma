@@ -1,0 +1,7 @@
+# Development tools only
+pip-tools
+black
+isort
+flake8
+pytest
+
