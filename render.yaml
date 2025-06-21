@@ -18,8 +18,6 @@ services:
       - key: DB_PASSWORD
       - key: DEBUG
         value: "False"
-      - key: ALLOWED_HOSTS
-        value: "yourdomain.com,www.yourdomain.com,*.onrender.com,localhost"
       - key: DB_ENGINE
         value: postgres
       - key: DB_NAME
@@ -31,7 +29,7 @@ services:
       - key: DB_PORT
         value: 5432
       - key: CSRF_TRUSTED_ORIGINS
-        value: "https://yourdomain.com,https://www.yourdomain.com,https://*.onrender.com"
+        value: "https://yourdomain.com,https://www.yourdomain.com,https://.onrender.com"
       - key: SECURE_SSL_REDIRECT
         value: "True"
       - key: SESSION_COOKIE_SECURE
