@@ -146,6 +146,9 @@ if config("DB_ENGINE", default="sqlite") == "postgres":
             "PASSWORD": config("DB_PASSWORD"),
             "HOST": config("DB_HOST"),
             "PORT": config("DB_PORT", default="5432"),
+            "OPTIONS": {
+                'sslmode': 'require'  # Required for Render PostgreSQL
+            }
         }
     }
 else:
