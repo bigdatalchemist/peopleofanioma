@@ -35,3 +35,4 @@ backend/static/images/
 # Coverage reports
 htmlcov/
 .coverage
+render.yaml
