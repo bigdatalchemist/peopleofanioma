@@ -21,7 +21,7 @@ if NLTK_DATA_PATH not in nltk.data.path:
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Environment configuration
 def get_config():
@@ -198,12 +198,12 @@ USE_TZ = True
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 STATICFILES_DIRS = [
-    BASE_DIR / "backend" / "static",
+    BASE_DIR / "static",
     BASE_DIR / "data",  # ← Now includes your GeoJSON files
 ]
 
-STATIC_ROOT = BASE_DIR / "staticfiles" 
-MEDIA_ROOT = BASE_DIR / "media"
+STATIC_ROOT = BASE_DIR.parent / "staticfiles" 
+MEDIA_ROOT = BASE_DIR.parent / "media"
 
 
 
