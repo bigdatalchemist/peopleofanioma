@@ -116,21 +116,46 @@ REST_FRAMEWORK = {
 
 ROOT_URLCONF = "backend.anioma_core.urls"
 
+# Replace your existing TEMPLATES setting with this:
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "backend" / 'templates'],
-        "APP_DIRS": True,
+        "DIRS": [os.path.join(BASE_DIR, "backend", "templates")],  # Points to your base templates
+        "APP_DIRS": True,  # Still allows app-specific templates
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                # Add any custom context processors here
+            ],
+            'debug': DEBUG,
+            # For template inheritance to work across apps:
+            'builtins': [
+                'django.templatetags.static',
+                'django.templatetags.i18n',
             ],
         },
     },
 ]
+
+# Keep this at the bottom of settings.py
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.template': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+        },
+    },
+}
 
 WSGI_APPLICATION = "backend.anioma_core.wsgi.application"
 
