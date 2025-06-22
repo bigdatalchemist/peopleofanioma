@@ -203,8 +203,8 @@ STATICFILES_DIRS = [
     BASE_DIR / "data",  # ← Now includes your GeoJSON files
 ]
 
-STATIC_ROOT = BASE_DIR.parent / "staticfiles" 
-MEDIA_ROOT = BASE_DIR.parent / "media"
+STATIC_ROOT = BASE_DIR / "staticfiles" 
+MEDIA_ROOT = BASE_DIR / "media"
 # For compression and caching
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
