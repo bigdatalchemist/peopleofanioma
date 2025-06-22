@@ -357,6 +357,7 @@ pydub==0.25.1
     # via -r backend/requirements.in
 gensim==4.3.3
     # via -r backend/requirements.in
+whitenoise==6.6.0
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

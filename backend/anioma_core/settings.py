@@ -92,13 +92,14 @@ LOGOUT_REDIRECT_URL = 'users:login'
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
-    'django_browser_reload.middleware.BrowserReloadMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'django_browser_reload.middleware.BrowserReloadMiddleware',
 ]
 
 
@@ -202,9 +203,13 @@ STATICFILES_DIRS = [
     BASE_DIR / "data",  # ← Now includes your GeoJSON files
 ]
 
-STATIC_ROOT = BASE_DIR.parent / "staticfiles" 
-MEDIA_ROOT = BASE_DIR.parent / "media"
+STATIC_ROOT = BASE_DIR / "staticfiles" 
+MEDIA_ROOT = BASE_DIR / "media"
+# For compression and caching
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# For non-Django files (optional)
+WHITENOISE_ROOT = BASE_DIR / 'root_files'
 
 
 # Default primary key field type
