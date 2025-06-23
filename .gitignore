@@ -36,3 +36,4 @@ backend/static/images/
 htmlcov/
 .coverage
 render.yaml
+/node_modules/
