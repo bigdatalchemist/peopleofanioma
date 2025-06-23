@@ -120,7 +120,7 @@ ROOT_URLCONF = "backend.anioma_core.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "backend", "templates")],  # Points to your base templates
+        "DIRS": [os.path.join(BASE_DIR, "templates")],  # Points to your base templates
         "APP_DIRS": True,  # Still allows app-specific templates
         "OPTIONS": {
             "context_processors": [
