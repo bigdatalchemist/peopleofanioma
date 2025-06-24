@@ -30,6 +30,7 @@ def dashboard_view(request):
     
     # Get current category from request
     current_category = request.GET.get('category')
+    search_query = request.GET.get('q', '')
     
     # Validate category exists
     if current_category and current_category not in categories:
@@ -40,4 +41,6 @@ def dashboard_view(request):
         'current_category': current_category,
         'top_blog_posts': top_blog_posts,
         'top_stories': top_stories,
+        'now': timezone.now(),
+        'q': search_query,
     })
