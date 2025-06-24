@@ -27,7 +27,7 @@ Thumbs.db
 
 # Tailwind CSS output
 backend/static/css/tailwind.css
-backend/static/images/
+
 
 # Logs
 *.log
