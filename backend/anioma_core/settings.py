@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
 
     # Third-party apps
     'rest_framework',
@@ -68,6 +69,8 @@ INSTALLED_APPS = [
     'tailwind',
     'django_browser_reload',
     'widget_tweaks',
+    'storages',                   # For Backblaze B2
+    'whitenoise.runserver_nostatic',
 
     
     # Project apps
@@ -214,12 +217,28 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles" 
-MEDIA_ROOT = BASE_DIR / "media"
 # For compression and caching
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # For non-Django files (optional)
 WHITENOISE_ROOT = BASE_DIR / 'root_files'
+
+
+# Backblaze B2 Media Storage (for user-uploaded files)
+AWS_ACCESS_KEY_ID = os.getenv('B2_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('B2_APP_KEY')
+AWS_STORAGE_BUCKET_NAME = 'peopleofanioma-render-media'  # Must match exactly
+AWS_S3_ENDPOINT_URL = 'https://s3.us-east-005.backblazeb2.com'  # From B2 bucket info
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.us-west-002.backblazeb2.com'
+AWS_DEFAULT_ACL = 'public-read'
+AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+
+# Media config (different from static files)
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'  # Backblaze URL
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# Remove local media root since we're using B2
+# DELETED: MEDIA_ROOT = BASE_DIR / "media"  ← No longer needed
 
 
 # Default primary key field type
