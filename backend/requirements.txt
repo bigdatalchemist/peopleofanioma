@@ -340,7 +340,7 @@ tzdata==2025.2
     #   pandas
 uritemplate==4.2.0
     # via drf-yasg
-urllib3==2.5.0
+urllib3<2.1,>=1.25.4
     # via requests
 wasabi==1.1.3
     # via
