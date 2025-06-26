@@ -227,9 +227,9 @@ WHITENOISE_ROOT = BASE_DIR / 'root_files'
 # Backblaze B2 Media Storage (for user-uploaded files)
 AWS_ACCESS_KEY_ID = os.getenv('B2_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('B2_APP_KEY')
-AWS_STORAGE_BUCKET_NAME = 'peopleofanioma-render-media'  # Must match exactly
-AWS_S3_ENDPOINT_URL = 'https://s3.us-east-005.backblazeb2.com'  # From B2 bucket info
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.us-east-005.backblazeb2.com'
+AWS_STORAGE_BUCKET_NAME = 'anioma-core-media-v2'  # Must match exactly
+AWS_S3_ENDPOINT_URL = 'https://s3.us-west-004.backblazeb2.com'  # From B2 bucket info
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.us-west-004.backblazeb2.com'
 AWS_DEFAULT_ACL = 'public-read'
 AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
 
