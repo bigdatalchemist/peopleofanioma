@@ -231,7 +231,7 @@ AWS_STORAGE_BUCKET_NAME = 'anioma-core-media-v2'  # Must match exactly
 AWS_S3_ENDPOINT_URL = 'https://s3.us-west-004.backblazeb2.com'  # From B2 bucket info
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.us-west-004.backblazeb2.com'
 AWS_DEFAULT_ACL = 'public-read'
-AWS_LOCATION = 'media'
+AWS_LOCATION = ''
 AWS_S3_DEBUG = True
 AWS_QUERYSTRING_AUTH = False 
 AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
