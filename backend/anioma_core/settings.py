@@ -231,13 +231,13 @@ AWS_STORAGE_BUCKET_NAME = 'anioma-core-media-v2'  # Must match exactly
 AWS_S3_ENDPOINT_URL = 'https://s3.us-west-004.backblazeb2.com'  # From B2 bucket info
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.us-west-004.backblazeb2.com'
 AWS_DEFAULT_ACL = 'public-read'
-AWS_LOCATION = ''
+AWS_LOCATION = 'media'
 AWS_S3_DEBUG = True
 AWS_QUERYSTRING_AUTH = False 
 AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
 
 # Media config (different from static files)
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'  # Backblaze URL
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'  # Backblaze URL
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 # Remove local media root since we're using B2
