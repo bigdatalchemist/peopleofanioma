@@ -237,7 +237,7 @@ AWS_QUERYSTRING_AUTH = False
 AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
 
 # Media config (different from static files)
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'  # Backblaze URL
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'  # Backblaze URL
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 # Remove local media root since we're using B2
