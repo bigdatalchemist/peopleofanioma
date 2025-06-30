@@ -1,6 +1,7 @@
 # blog/models.py
 from django.db import models
 from django.utils.text import slugify
+from storages.backends.s3boto3 import S3Boto3Storage
 from django.contrib.auth import get_user_model
 User = get_user_model()
 

@@ -58,7 +58,6 @@ def blog_search(request):
     })   
 
 @require_POST
-@login_required
 def add_reaction(request, post_id):
     blog_post = get_object_or_404(Blog, id=post_id)
     reaction_type = request.POST.get('reaction')

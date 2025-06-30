@@ -1,7 +1,11 @@
 # apps.users.models.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
+from storages.backends.s3boto3 import S3Boto3Storage
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
+import logging
+logger = logging.getLogger(__name__)
 
 class CustomUser(AbstractUser):
     # Add your custom fields below
@@ -17,6 +21,60 @@ class CustomUser(AbstractUser):
         if self.profile_picture and hasattr(self.profile_picture, 'url'):
             return self.profile_picture.url
         return '/static/images/default-profile.png'
+    
+    
+    def delete_profile_pic(self):
+        """Safely removes profile picture while keeping the user.
+        
+        Handles cases where:
+        - File deletion might fail (permissions, missing file)
+        - Database save might fail
+        - Either operation can fail independently
+        
+        Returns:
+            bool: True if deletion was successful, False otherwise
+        """
+        if not self.profile_picture:
+            return True  # Nothing to do, consider this successful
+
+        old_picture = self.profile_picture
+        success = False
+
+        try:
+            # Delete the file from storage first
+            try:
+                self.profile_picture.delete(save=False)
+            except Exception as file_error:
+                logger.warning(
+                    "Failed to delete profile picture file for user %s. "
+                    "Error: %s - Continuing to clear reference",
+                    self.pk,
+                    str(file_error)
+                )
+
+            # Clear the field reference regardless of file deletion success
+            self.profile_picture = None
+
+            # Save the model
+            try:
+                self.save(update_fields=['profile_picture'])
+                success = True
+            except Exception as save_error:
+                # Revert the picture reference if save fails
+                self.profile_picture = old_picture
+                logger.error(
+                    "Failed to save user %s after profile picture removal. "
+                    "Error: %s",
+                    self.pk,
+                    str(save_error)
+                )
+                success = False
+
+        except Exception as e:
+            logger.exception("Unexpected error during profile picture deletion")
+            success = False
+
+        return success
 
     def approved_stories(self):
         return self.stories.filter(is_approved=True)
@@ -27,3 +85,9 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+    
+@receiver(pre_delete, sender=CustomUser)
+def delete_profile_picture_files(sender, instance, **kwargs):
+    """Automatically delete profile picture files when user is deleted"""
+    if instance.profile_picture:
+        instance.profile_picture.delete(save=False)
