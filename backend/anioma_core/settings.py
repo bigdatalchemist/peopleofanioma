@@ -13,6 +13,7 @@ from decouple import Config, RepositoryEnv, config
 import os
 from pathlib import Path
 import nltk
+from storages.backends.s3boto3 import S3Boto3Storage
 
 # Add NLTK data path globally
 NLTK_DATA_PATH = os.path.join(os.path.expanduser("~"), "AppData", "Roaming", "nltk_data")
@@ -238,7 +239,15 @@ AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
 
 # Media config (different from static files)
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'  # Backblaze URL
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# Storage backends
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 # Remove local media root since we're using B2
 # DELETED: MEDIA_ROOT = BASE_DIR / "media"  ← No longer needed
