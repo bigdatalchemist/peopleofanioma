@@ -1,6 +1,6 @@
 # stories/views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Story, Comment
+from .models import Story, Comment, StoryReaction
 from .forms import StoryForm
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -10,9 +10,9 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.http import HttpResponseForbidden
+from django.template.loader import render_to_string
 
 @login_required
-
 def story_list(request):
     query = request.GET.get('q')
     all_stories = Story.objects.filter(is_approved=True).order_by('-date_submitted')
@@ -67,26 +67,54 @@ def submit_story(request):
         form = StoryForm()
     return render(request, 'stories/submit_story.html', {'form': form})
 
-def like_story(request, slug):
-    story = get_object_or_404(Story, slug=slug)
-    user = request.user
-    if user in story.likes.all():
-        story.likes.remove(user)
-        liked = False
+@require_POST 
+def add_story_reaction(request, story_id):
+    story = get_object_or_404(Story, id=story_id)
+    reaction_type = request.POST.get('reaction')
+    
+    if not reaction_type:
+        return JsonResponse({'status': 'error', 'message': 'Reaction type required'}, status=400)
+    
+    # Check if user already has this reaction
+    existing_reaction = StoryReaction.objects.filter(
+        user=request.user,
+        story=story,
+        type=reaction_type
+    ).first()
+    
+    if existing_reaction:
+        existing_reaction.delete()  # Toggle reaction off
+        action = 'removed'
     else:
-        story.likes.add(user)
-        liked = True
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({'liked': liked, 'likes_count': story.likes.count()})
-    return redirect('story_detail', slug=slug)
-
-def upvote_story(request, slug):
-    story = get_object_or_404(Story, slug=slug)
-    story.upvotes += 1
-    story.save()
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({'upvotes': story.upvotes})
-    return redirect('story_detail', slug=slug)
+        # Remove any existing reaction of different type
+        StoryReaction.objects.filter(user=request.user, story=story).delete()
+        # Add new reaction
+        StoryReaction.objects.create(
+            user=request.user,
+            story=story,
+            type=reaction_type
+        )
+        action = 'added'
+    
+    # Return updated reaction counts
+    reaction_counts = {
+        'like': story.reactions.filter(type='like').count(),
+        'love': story.reactions.filter(type='love').count(),
+        'clap': story.reactions.filter(type='clap').count(),
+        'insightful': story.reactions.filter(type='insightful').count(),
+        'laugh': story.reactions.filter(type='laugh').count(),
+    }
+    
+    return JsonResponse({
+        'status': 'success',
+        'action': action,
+        'reaction': reaction_type,
+        'reaction_html': render_to_string('stories/reaction_counts.html', {
+            'story': story,
+            'user': request.user
+        }),
+        'reaction_counts': reaction_counts
+    })
 
 
 def add_comment(request, slug):

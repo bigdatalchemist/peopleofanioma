@@ -4,6 +4,7 @@ from django.utils import timezone
 from datetime import timedelta
 from apps.blog.models import Blog
 from apps.stories.models import Story
+from django.db.models import Count, Q
 
 def dashboard_view(request):
     # Get categories from Blog model
@@ -24,9 +25,9 @@ def dashboard_view(request):
         ).order_by('-created_at')[:4]
     
     # Get top stories - using is_approved instead of published
-    top_stories = Story.objects.filter(
-        is_approved=True  # Using the correct field name
-    ).order_by('-upvotes')[:3]
+    top_stories = Story.objects.annotate(
+        like_count=Count('reactions', filter=Q(reactions__type='like'))
+    ).order_by('-like_count')[:3]
     
     # Get current category from request
     current_category = request.GET.get('category')

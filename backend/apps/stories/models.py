@@ -24,8 +24,6 @@ class Story(models.Model):
     audio = models.FileField(upload_to='story_audio/', blank=True, null=True)
     is_approved = models.BooleanField(default=False)
     date_submitted = models.DateTimeField(auto_now_add=True)
-    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='liked_stories', blank=True)
-    upvotes = models.PositiveIntegerField(default=0)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -50,6 +48,45 @@ class Story(models.Model):
 
     def __str__(self):
         return f"{self.title} by {self.author_name}"
+    
+    @property
+    def reaction_counts(self):
+        """Alternative counting method that's consistent with the template filter approach"""
+        return {
+            'like': self.reactions.filter(type='like').count(),
+            'love': self.reactions.filter(type='love').count(),
+            'clap': self.reactions.filter(type='clap').count(),
+            'insightful': self.reactions.filter(type='insightful').count(),
+            'laugh': self.reactions.filter(type='laugh').count(),
+        }
+    
+    def get_user_reaction(self, user):
+        """Get the current user's reaction type if exists"""
+        if user.is_authenticated:
+            reaction = self.reactions.filter(user=user).first()
+            return reaction.type if reaction else None
+        return None
+    
+class StoryReaction(models.Model):
+    REACTION_CHOICES = [
+        ('like', '👍 Like'),
+        ('love', '❤️ Love'),
+        ('clap', '👏 Clap'),
+        ('insightful', '💡 Insightful'),
+        ('laugh', '😂 Laugh'),
+    ]
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='story_reactions')
+    story = models.ForeignKey('Story', related_name='reactions', on_delete=models.CASCADE)
+    type = models.CharField(max_length=20, choices=REACTION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'story', 'type')  # One reaction per user per story
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} reacted {self.get_type_display()} to {self.story.title}"
 
 
 class Comment(models.Model):

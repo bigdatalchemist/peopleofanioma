@@ -37,3 +37,5 @@ htmlcov/
 .coverage
 render.yaml
 node_modules/
+local_settings.py
+base2.html

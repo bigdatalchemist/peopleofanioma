@@ -9,7 +9,7 @@
     <form method="get" action="" class="mb-6">
         <input type="text" name="q" placeholder="Search by title or category"
                value="{{ query|default_if_none:'' }}"
-               class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+               class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500">
     </form>
 
     <!-- Stories List -->
@@ -29,7 +29,7 @@
                 {% endif %}
 
                 {% if story.slug %}
-                    <h2 class="text-xl font-semibold text-indigo-700 hover:text-indigo-900 transition duration-200">
+                    <h2 class="text-xl font-semibold text-orange-700 hover:text-orange-900 transition duration-200">
                         <a href="{% url 'stories:story_detail' story.slug %}" class="hover:underline">
                             {{ story.title }}
                         </a>
@@ -50,12 +50,12 @@
 
                 {% if story.slug %}
                     <a href="{% url 'stories:story_detail' story.slug %}"
-                       class="inline-block text-indigo-600 hover:text-indigo-800 hover:underline font-medium">
+                       class="inline-block text-orange-600 hover:text-orange-800 hover:underline font-medium">
                         Read More →
                     </a>
 
                     <a href="{% url 'stories:story_detail' story.slug %}#share"
-                       class="inline-block ml-4 text-sm text-indigo-600 hover:underline">
+                       class="inline-block ml-4 text-sm text-orange-600 hover:underline">
                         Share →
                     </a>
                 {% endif %}

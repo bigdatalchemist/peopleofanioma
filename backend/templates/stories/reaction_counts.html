@@ -1,0 +1,28 @@
+{% load reaction_filter %}
+<div class="flex gap-2 my-4">
+  <button class="reaction-btn hover:scale-110 transition" 
+          data-story-id="{{ story.id }}" 
+          data-reaction="like">
+    👍 {{ story|story_reaction_count:'like' }}
+  </button>
+  <button class="reaction-btn hover:scale-110 transition" 
+          data-story-id="{{ story.id }}" 
+          data-reaction="love">
+    ❤️ {{ story|story_reaction_count:'love' }} 
+  </button>
+  <button class="reaction-btn hover:scale-110 transition" 
+          data-story-id="{{ story.id }}" 
+          data-reaction="laugh">
+    😆 {{ story|story_reaction_count:'laugh' }} 
+  </button>
+  <button class="reaction-btn hover:scale-110 transition" 
+          data-story-id="{{ story.id }}" 
+          data-reaction="clap">
+    👏 {{ story|story_reaction_count:'clap' }} 
+  </button>
+  <button class="reaction-btn hover:scale-110 transition" 
+          data-story-id="{{ story.id }}" 
+          data-reaction="insightful">
+    💡 {{ story|story_reaction_count:'insightful' }} 
+  </button>
+</div>

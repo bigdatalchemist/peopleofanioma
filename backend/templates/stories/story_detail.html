@@ -1,18 +1,19 @@
 {% extends "base.html" %}
 {% load static %}
+{% load reaction_filter %}
 {% block content %}
-<div class="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6 mt-8 border border-gray-200">
+<div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mt-8 border border-gray-200 dark:border-gray-700">
 
     <!-- Story Title and Info -->
-    <h1 class="text-2xl font-bold text-indigo-800">{{ story.title }}</h1>
-    <p class="text-sm text-gray-600 mt-1">
+    <h1 class="text-2xl font-bold text-orange-800 dark:text-orange-300">{{ story.title }}</h1>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
         By <span class="font-medium">{{ story.author_name }}</span> | 
         <span class="italic">{{ story.category }}</span> | 
         <span>{{ story.date_submitted|date:"M d, Y" }}</span>
     </p>
 
     <!-- Story Content -->
-    <div class="mt-4 text-gray-800 leading-relaxed">
+    <div class="mt-4 text-gray-800 dark:text-gray-200 leading-relaxed">
         {{ story.content }}
     </div>
 
@@ -29,79 +30,98 @@
         </div>
     {% endif %}
 
-    <!-- Likes & Upvotes -->
-    <!-- Likes -->
-    <button id="like-btn" class="px-4 py-2 bg-blue-600 text-white rounded shadow"
-            onclick="likeStory('{{ story.slug }}')">
-        👍 Like (<span id="like-count">{{ story.likes.count }}</span>)
-    </button>
+    <!-- Reaction buttons -->
+<div class="flex gap-4 my-6" id="reaction-counts">
+  {% include 'stories/reaction_counts.html' %}
+</div>
 
-    <!-- Upvotes -->
-    <button id="upvote-btn" class="px-4 py-2 bg-green-600 text-white rounded shadow"
-            onclick="upvoteStory('{{ story.slug }}')">
-        ⬆️ Upvote (<span id="upvote-count">{{ story.upvotes }}</span>)
-    </button>
+        {% if story.user == request.user %}
+<div class="flex gap-2">
+    <!-- Edit Button -->
+    <a href="{% url 'stories:edit_story' story.slug %}" 
+       class="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-yellow-800 text-white rounded shadow transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+        Edit
+    </a>
+    
+    <!-- Delete Button -->
+    <a href="{% url 'stories:delete_story' story.slug %}" 
+       class="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white rounded shadow transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        Delete
+    </a>
+</div>
+{% endif %}
 
     <!-- Comments Section -->
     <div class="mt-10">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Comments:</h3>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Comments:</h3>
         {% if story.comments.exists %}
             <ul class="space-y-4">
                 {% for comment in story.comments.all %}
-                    <li class="p-4 border border-gray-200 rounded bg-gray-50">
-                        <div class="text-sm text-gray-700">
+                    <li class="p-4 border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-700">
+                        <div class="text-sm text-gray-700 dark:text-gray-300">
                             <strong>{{ comment.user.username }}</strong>
-                            <span class="text-xs text-gray-500 ml-2">({{ comment.timestamp|date:"M d, Y H:i" }})</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">({{ comment.timestamp|date:"M d, Y H:i" }})</span>
                         </div>
-                        <p class="mt-1 text-gray-800">{{ comment.content }}</p>
+                        <p class="mt-1 text-gray-800 dark:text-gray-200">{{ comment.content }}</p>
                     </li>
                 {% endfor %}
             </ul>
         {% else %}
-            <p class="text-gray-500 text-sm">No comments yet. Be the first to comment!</p>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">No comments yet. Be the first to comment!</p>
         {% endif %}
     </div>
-    {% if story.user == request.user %}
-  <a href="{% url 'stories:edit_story' story.slug %}">Edit</a>
-  <a href="{% url 'stories:delete_story' story.slug %}">Delete</a>
-{% endif %}
 
+    <!-- Social Sharing Section -->
+    <div id="share" class="mt-10 border-t border-gray-200 dark:border-gray-700 pt-6">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Share this story:</h3>
+        
+        <!-- Native Share (for mobile support) -->
+        <button id="native-share-btn"
+                onclick="shareStory()"
+                class="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded transition mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M4 12v1a7 7 0 007 7h2a7 7 0 007-7v-1m-4-4l4-4m0 0l-4-4m4 4H10"></path>
+            </svg>
+            Share via device
+        </button>
 
-        <!-- Social Sharing Section -->
-         <!-- Native Share (for mobile support) -->
-    <button id="native-share-btn"
-            onclick="shareStory()"
-            class="flex items-center gap-2 bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                d="M4 12v1a7 7 0 007 7h2a7 7 0 007-7v-1m-4-4l4-4m0 0l-4-4m4 4H10"></path>
-        </svg>
-        Share via device
-    </button>
-
-    <div id="share" class="mt-10 border-t pt-6">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Share this story:</h3>
         <div class="flex flex-wrap gap-4">
             <!-- Facebook -->
             <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}"
             target="_blank"
-            class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                <img src="{% static 'icons/facebook.svg' %}" alt="Facebook" class="w-5 h-5"> Facebook
+            class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
+                </svg>
+                Facebook
             </a>
 
             <!-- Twitter / X -->
             <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ story.title|urlencode }}"
             target="_blank"
-            class="flex items-center gap-2 bg-black text-white px-4 py-2 rounded hover:bg-gray-900 transition">
-                <img src="{% static 'icons/twitter.svg' %}" alt="X" class="w-5 h-5"> X (Twitter)
+            class="flex items-center gap-2 bg-black hover:bg-gray-900 text-white px-4 py-2 rounded transition">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/>
+                </svg>
+                X (Twitter)
             </a>
 
             <!-- WhatsApp -->
             <a href="https://api.whatsapp.com/send?text={{ story.title|urlencode }}%20{{ request.build_absolute_uri }}"
             target="_blank"
-            class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
-                <img src="{% static 'icons/whatsapp.svg' %}" alt="WhatsApp" class="w-5 h-5"> WhatsApp
+            class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+                WhatsApp
             </a>
         </div>
     </div>
@@ -110,67 +130,96 @@
     {% if user.is_authenticated %}
         <form action="{% url 'stories:add_comment' story.slug %}" method="post" class="mt-8">
             {% csrf_token %}
-            <label for="content" class="block mb-2 text-sm font-medium text-gray-700">Add a Comment:</label>
-            <textarea name="content" rows="3" class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Your comment..."></textarea>
-            <button type="submit" class="mt-3 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded shadow">
+            <label for="content" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Add a Comment:</label>
+            <textarea name="content" rows="3" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:text-white" placeholder="Your comment..."></textarea>
+            <button type="submit" class="mt-3 px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded shadow">
                 Post Comment
             </button>
         </form>
     {% else %}
-        <p class="mt-6 text-sm text-gray-600 italic">Please <a href="{% url 'login' %}" class="text-indigo-600 hover:underline">log in</a> to comment.</p>
+        <p class="mt-6 text-sm text-gray-600 dark:text-gray-400 italic">Please <a href="{% url 'users:login' %}" class="text-orange-600 hover:underline">log in</a> to comment.</p>
     {% endif %}
-
-
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
 <script>
-  function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(function () {
-      alert('Link copied to clipboard!');
-    });
+// 1. Copy to Clipboard Function
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    alert('Link copied to clipboard!');
+  });
+}
+
+// 2. CSRF Token Handling
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
   }
-</script>
+  return cookieValue;
+}
 
-<script>
-    async function likeStory(slug) {
-        const response = await fetch(`/stories/${slug}/like/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-        });
-        const data = await response.json();
-        document.getElementById('like-count').innerText = data.likes_count;
-    }
+// 3. Story Sharing Function
+function shareStory() {
+  if (navigator.share) {
+    navigator.share({
+      title: "{{ story.title }}",
+      text: "Check out this story on People of Anioma!",
+      url: window.location.href
+    }).then(() => {
+      console.log('Shared successfully');
+    }).catch((err) => {
+      console.error('Share failed:', err);
+    });
+  } else {
+    alert("Sharing not supported on this browser. Use the buttons above instead.");
+  }
+}
 
-    async function upvoteStory(slug) {
-        const response = await fetch(`/stories/${slug}/upvote/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-        });
-        const data = await response.json();
-        document.getElementById('upvote-count').innerText = data.upvotes;
-    }
-</script>
-<script>
-    function shareStory() {
-        if (navigator.share) {
-            navigator.share({
-                title: "{{ story.title }}",
-                text: "Check out this story on People of Anioma!",
-                url: window.location.href
-            }).then(() => {
-                console.log('Shared successfully');
-            }).catch((err) => {
-                console.error('Share failed:', err);
-            });
-        } else {
-            alert("Sharing not supported on this browser. Use the buttons above instead.");
+// 4. Reaction Handling (jQuery dependent)
+$(document).ready(function() {
+  const csrftoken = getCookie('csrftoken');
+  
+  // Debug check
+  console.log("jQuery version:", $.fn.jquery);
+  console.log("CSRF Token:", csrftoken ? "Found" : "Missing");
+  
+  // Reaction click handler
+  $(document).on('click', '.reaction-btn', function(e) {
+    e.preventDefault();
+    const $btn = $(this);
+    const storyId = $btn.data('story-id');
+    const reactionType = $btn.data('reaction');
+    
+    console.log(`Attempting ${reactionType} reaction for story ${storyId}`);
+    
+    $.ajax({
+      url: `/stories/${storyId}/react/`,
+      type: 'POST',
+      data: {
+        'reaction': reactionType,
+        'csrfmiddlewaretoken': csrftoken,
+      },
+      success: function(response) {
+        console.log("Server response:", response);
+        if(response.status === 'success') {
+          $('#reaction-counts').html(response.reaction_html);
         }
-    }
+      },
+      error: function(xhr) {
+        console.error("Error:", xhr.responseText);
+        alert("Failed to save reaction. Please refresh and try again.");
+      }
+    });
+  });
+});
 </script>
-
 {% endblock %}
