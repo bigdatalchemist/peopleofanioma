@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% load reaction_filter %}
+{% load blog_reaction_filter %}
 
 {% block title %}{{ post.title }} – People of Anioma{% endblock %}
 {% block content %}
@@ -15,9 +15,12 @@
         {{ post.get_category_display }}
       </span>
       <a href="{% url 'blog:blog_list' %}?category={{ post.category }}" 
-         class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition">
-        View all in {{ post.get_category_display }}
-      </a>
+   class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900 dark:hover:bg-yellow-800 text-yellow-800 hover:text-yellow-900 dark:text-yellow-100 dark:hover:text-white rounded-full transition-colors duration-200 shadow-sm">
+   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+   </svg>
+   View all in {{ post.get_category_display }}
+</a>
     </div>
 
     <h1 class="text-4xl font-extrabold mb-4 text-gray-900 dark:text-white">{{ post.title }}</h1>
@@ -61,7 +64,7 @@
 
     <!-- Reaction buttons -->
     <div class="flex gap-4 my-6" id="reaction-counts">
-      {% include 'blog/reaction_counts.html' %}
+      {% include 'blog/blog_reaction_counts.html' %}
     </div>
 
     <!-- Comment section -->
@@ -73,10 +76,10 @@
     <form id="comment-form" data-post-id="{{ post.id }}" class="mt-6">
       {% csrf_token %}
       <textarea id="comment-input" required class="w-full p-3 border dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200" placeholder="Add a comment..."></textarea>
-      <button type="submit" class="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition">Comment</button>
+      <button type="submit" class="mt-3 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded transition">Comment</button>
     </form>
 
-    <a href="{% url 'blog:blog_list' %}" class="inline-block text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition text-sm mt-6">
+    <a href="{% url 'blog:blog_list' %}" class="inline-block text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 hover:underline transition text-sm mt-6">
       ← Back to all posts
     </a>
   </article>

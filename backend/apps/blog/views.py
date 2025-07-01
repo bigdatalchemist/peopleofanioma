@@ -99,7 +99,7 @@ def add_reaction(request, post_id):
         'status': 'success',
         'action': action,
         'reaction': reaction_type,
-        'reaction_html': render_to_string('blog/reaction_counts.html', {
+        'reaction_html': render_to_string('blog/blog_reaction_counts.html', {
             'post': blog_post,
             'user': request.user
         }),
