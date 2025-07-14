@@ -12,7 +12,7 @@ from django.contrib import messages
 from django.http import HttpResponseForbidden
 from django.template.loader import render_to_string
 
-@login_required
+
 def story_list(request):
     query = request.GET.get('q')
     all_stories = Story.objects.filter(is_approved=True).order_by('-date_submitted')

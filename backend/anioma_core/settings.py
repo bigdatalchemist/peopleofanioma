@@ -96,6 +96,7 @@ LOGOUT_REDIRECT_URL = 'users:login'
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "anioma_core.middleware.domain_redirect.ForceCanonicalDomainMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -103,7 +104,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'django_browser_reload.middleware.BrowserReloadMiddleware',
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 
 

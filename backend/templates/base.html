@@ -3,35 +3,53 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- Added maximum-scale=1 to prevent zooming which can break layout -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>{% block title %}People of Anioma{% endblock %}</title>
-  <link href="{% static 'css/tailwind.css' %}" rel="stylesheet">
-  <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
-  <script src="https://unpkg.com/heroicons@2.0.16/dist/heroicons.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" 
-        crossorigin="anonymous">
-  </script>
-  <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
-  {% block extra_styles %}{% endblock %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>{% block title %}People of Anioma - Celebrating Our Culture{% endblock %}</title>
+  <meta name="description" content="People of Anioma is a cultural platform celebrating Anioma heritage, history, and people.">
+  <meta name="keywords" content="Anioma, culture, Nigeria, heritage, stories, diaspora, history">
+  <meta name="author" content="People of Anioma Project">
+  <meta property="og:title" content="People of Anioma">
+  <meta property="og:description" content="Celebrating Anioma heritage, history, and stories.">
+  <meta property="og:image" content="{% static 'images/og-image.jpg' %}">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="canonical" href="https://peopleofanioma.com{{ request.path }}">
+  <link rel="icon" href="{% static 'images/favicon.png' %}" type="image/png">
+  <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
+
+  <link rel="preload" href="{% static 'css/tailwind.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="{% static 'css/tailwind.css' %}" rel="stylesheet"></noscript>
+
+  <script src="https://cdn.plot.ly/plotly-2.26.0.min.js" defer></script>
+  <script src="https://unpkg.com/heroicons@2.0.16/dist/heroicons.min.js" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+
   {% csrf_token %}
+  {% block extra_styles %}{% endblock %}
   {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 font-sans transition-colors duration-200">
 
   <!-- Sticky Header Bar -->
-<header class="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm">
+<header class="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30 shadow-sm">
   <div class="max-w-7xl mx-auto px-4 flex flex-nowrap justify-between items-center py-4">
-    
-    <!-- Logo Only -->
-    <div class="flex items-center shrink-0">
-      <img src="{% static 'images/Anioma_logo2.jpg' %}" alt="Logo" 
-           class="h-10 w-10 opacity-80 hover:opacity-100 hover:blur-none transition duration-300">
+
+    <!-- Mobile Hamburger Menu -->
+    <div class="flex items-center md:hidden z-30">
+      <button id="mobile-menu-button" class="text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white focus:outline-none">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
     </div>
 
-    <!-- Home & Blog Container (with border) -->
-    <div class="flex justify-center flex-1 mx-2">
+    <!-- Desktop Navigation - Centered Group -->
+    <div class="hidden md:flex justify-center flex-1 mx-2">
       <div class="flex items-center gap-2 sm:gap-4 border border-gray-300 dark:border-gray-600 rounded-full px-4 py-2 bg-white/30 dark:bg-gray-700/30 backdrop-blur-sm">
         <!-- Home Button -->
         <a href="{% url 'dashboard:dashboard' %}" 
@@ -50,39 +68,122 @@
           </svg>
           <span>Blog</span>
         </a>
+
+        <!-- Ethnographic Survey Button -->
+        <a href="{% url 'ethnographic_survey:submit_survey' %}" 
+           class="flex items-center justify-center gap-1 italic bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold shadow-md hover:bg-yellow-600 hover:text-white hover:shadow-xl transition duration-300 ease-in-out ring-1 ring-green-300 hover:ring-green-500 focus:outline-none text-sm whitespace-nowrap">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+          </svg>
+          <span>Ethnographic Survey</span>
+        </a>
+
+        <!-- Stories Button -->
+        <a href="{% url 'stories:story_list' %}" 
+           class="flex items-center justify-center gap-1 italic bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold shadow-md hover:bg-yellow-600 hover:text-white hover:shadow-xl transition duration-300 ease-in-out ring-1 ring-green-300 hover:ring-green-500 focus:outline-none text-sm whitespace-nowrap">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>
+          </svg>
+          <span>Stories</span>
+        </a>
+
+        <!-- Diaspora Tracker Button -->
+        <a href="{% url 'diaspora:diaspora_submit' %}" 
+           class="flex items-center justify-center gap-1 italic bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold shadow-md hover:bg-yellow-600 hover:text-white hover:shadow-xl transition duration-300 ease-in-out ring-1 ring-green-300 hover:ring-green-500 focus:outline-none text-sm whitespace-nowrap">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span>Diaspora Tracker</span>
+        </a>
       </div>
     </div>
 
-    <!-- Navigation Links with Proper Spacing -->
-    <div class="flex items-center gap-3 sm:gap-4">
-      <!-- About Button -->
-      <a href="{% url 'about' %}" class="nav-link-mobile">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    <!-- Right Side Buttons (About, Login and Dark Mode) -->
+    <div class="flex items-center gap-2 sm:gap-3">
+    <!-- Facebook -->
+    <a href="https://www.facebook.com/share/15oGygim5Z/?mibextid=wwXIfr" 
+       target="_blank" 
+       rel="noopener noreferrer"
+       class="p-2 rounded-full transition-all duration-200
+              bg-gray-50 hover:bg-blue-50 dark:bg-gray-800 dark:hover:bg-blue-900/20">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" 
+             fill="currentColor" 
+             viewBox="0 0 24 24">
+            <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
         </svg>
-        <span class="hidden xs:inline">About</span>
-      </a>
+    </a>
+
+    <!-- Instagram -->
+    <a href="https://www.instagram.com/peopleofanioma" 
+       target="_blank" 
+       rel="noopener noreferrer"
+       class="p-2 rounded-full transition-all duration-200
+              bg-gray-50 hover:bg-pink-50 dark:bg-gray-800 dark:hover:bg-pink-900/20">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pink-600 dark:text-pink-400" 
+             fill="currentColor" 
+             viewBox="0 0 24 24">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+        </svg>
+    </a>
+
+    <!-- Twitter/X -->
+    <a href="https://twitter.com/peopleofanioma" 
+       target="_blank" 
+       rel="noopener noreferrer"
+       class="p-2 rounded-full transition-all duration-200
+              bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 dark:text-gray-200" 
+             fill="currentColor" 
+             viewBox="0 0 24 24">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+    </a>
+    </div>
 
       <!-- Login Button -->
-      <a href="{% url 'users:login' %}" class="nav-link-mobile ml-2">  <!-- Added ml-2 for spacing -->
+       <div class="flex items-center gap-2 sm:gap-3">
+      <a href="{% url 'users:login' %}" class="nav-link-mobile ml-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
         </svg>
         <span class="hidden xs:inline">Login</span>
       </a>
+      </div>
 
       <!-- Dark/Light Mode Toggle -->
-  <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-colors">
-      <svg id="theme-toggle-dark-icon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-      </svg>
-      <svg id="theme-toggle-light-icon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path>
-      </svg>
-    </button>
+       <div class="flex items-center gap-2 sm:gap-3">
+      <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-colors">
+        <svg id="theme-toggle-dark-icon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+        </svg>
+        <svg id="theme-toggle-light-icon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path>
+        </svg>
+      </button>
+      </div>
     </div>
-  </div>
 </header>
+
+    <!-- Mobile Menu Overlay (Hidden by default) -->
+    <div id="mobile-menu-overlay" class="hidden fixed inset-0 bg-black/50 z-40 md:hidden"></div>
+
+    <!-- Mobile Menu Sidebar (Hidden by default) -->
+    <div id="mobile-menu" class="hidden fixed top-0 left-0 h-full w-10/12 max-w-sm bg-gray-100 dark:bg-gray-800 shadow-xl z-50 transform transition-transform duration-300 ease-in-out -translate-x-full md:hidden">
+  <div class="flex justify-end px-4 pt-4">
+    <button id="mobile-menu-close" class="text-gray-700 dark:text-gray-200 hover:text-red-500 text-2xl font-bold focus:outline-none">&times;</button>
+  </div>
+  <div class="h-full overflow-y-auto px-4 pb-8 space-y-6 font-merriweather">
+        <a href="{% url 'dashboard:dashboard' %}" class="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 text-lg font-medium">Home</a>
+        <a href="{% url 'blog:blog_list' %}" class="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 text-lg font-medium">Blog</a>
+        <a href="{% url 'ethnographic_survey:submit_survey' %}" class="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 text-lg font-medium">Ethnographic Survey</a>
+        <a href="{% url 'stories:story_list' %}" class="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 text-lg font-medium">Stories</a>
+        <a href="{% url 'diaspora:diaspora_submit' %}" class="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 text-lg font-medium">Diaspora Tracker</a>
+        <a href="{% url 'about' %}" class="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 text-lg font-medium">About</a>
+        <a href="{% url 'users:login' %}" class="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 text-lg font-medium">Login</a>
+      </div>
+    </div>
+
 
   <!-- Main content -->
   <main class="flex-grow p-4">
@@ -144,55 +245,29 @@
   </footer>
 
 
-  <script>
-    // Intersection Observer for fade-in sections
-    const fadeSections = document.querySelectorAll('.fade-in-section');
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('fade-in');
-          entry.target.classList.remove('opacity-0');
-        }
-      });
-    }, { threshold: 0.1 });
+<script src="{% static 'js/base.js' %}" defer></script>
+<script src="{% static 'js/toggle-password.js' %}" defer></script>
 
-    fadeSections.forEach(section => {
-      observer.observe(section);
-    });
+{% block extra_scripts %}{% endblock %}
+<!-- Back to Top Button -->
+<div x-data="{ visible: false }"
+     x-init="window.addEventListener('scroll', () => { visible = window.scrollY > 100 })"
+     x-show="visible"
+     x-transition.opacity.duration.300ms
+     class="fixed bottom-6 right-6 z-50">
+  
+  <button @click="window.scrollTo({top: 0, behavior: 'smooth'})"
+          class="p-3 rounded-full shadow-lg hover:scale-110 transition-transform duration-300 
+                 bg-aniomaBlue text-white hover:bg-blue-800
+                 dark:bg-white dark:text-aniomaBlue dark:hover:bg-gray-200"
+          title="Back to Top" aria-label="Scroll to top">
 
-    // Dark/Light Mode Toggle Functionality
-    const themeToggle = document.getElementById('theme-toggle');
-    const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
-    const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l5 5a1 1 0 01-1.414 1.414L11 6.414V17a1 1 0 11-2 0V6.414L5.707 9.707A1 1 0 114.293 8.293l5-5A1 1 0 0110 3z" clip-rule="evenodd" />
+    </svg>
+  </button>
 
-    // Check for saved user preference or use system preference
-    if (localStorage.getItem('color-theme') === 'dark' || 
-        (!localStorage.getItem('color-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-      themeToggleLightIcon.classList.remove('hidden');
-    } else {
-      document.documentElement.classList.remove('dark');
-      themeToggleDarkIcon.classList.remove('hidden');
-    }
+</div>
 
-    // Toggle button click handler
-    themeToggle.addEventListener('click', function() {
-      // Toggle icons
-      themeToggleDarkIcon.classList.toggle('hidden');
-      themeToggleLightIcon.classList.toggle('hidden');
-      
-      // Toggle theme
-      if (document.documentElement.classList.contains('dark')) {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('color-theme', 'light');
-      } else {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('color-theme', 'dark');
-      }
-    });
-  </script>
-<script src="{% static 'js/toggle-password.js' %}"></script>
-
-  {% block extra_scripts %}{% endblock %}
 </body>
 </html>

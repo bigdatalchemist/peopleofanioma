@@ -39,3 +39,5 @@ render.yaml
 node_modules/
 local_settings.py
 base2.html
+base3.html
+base4.html
