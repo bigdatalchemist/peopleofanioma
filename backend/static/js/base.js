@@ -76,3 +76,52 @@
         localStorage.setItem('color-theme', 'dark');
       }
     });
+
+// Newsletter subscription form handling
+  document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('newsletterForm');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+    fetch('/newsletter/subscribe/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+      },
+      body: formData,
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showNewsletterToast(data.message || "Successfully subscribed!");
+          form.reset();
+        } else {
+          showNewsletterToast(data.message || "Subscription failed.", "error");
+        }
+      })
+      .catch(() => {
+        showNewsletterToast("An error occurred. Please try again.", "error");
+      });
+  });
+
+  function showNewsletterToast(message, type = 'success') {
+    const container = document.getElementById('newsletterToastContainer');
+
+    const toast = document.createElement('div');
+    toast.setAttribute('x-data', '{ show: true }');
+    toast.setAttribute('x-init', 'setTimeout(() => show = false, 5000)');
+    toast.setAttribute('x-show', 'show');
+    toast.setAttribute('x-transition', '');
+    toast.className =
+      `mb-2 px-4 py-3 rounded shadow-lg text-sm font-semibold 
+      ${type === 'error' ? 'bg-red-600 text-white' : 'bg-green-500 text-white'}`;
+    toast.textContent = message;
+
+    container.appendChild(toast);
+  }
+});
+

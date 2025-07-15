@@ -37,6 +37,8 @@ urlpatterns = [
     path('survey/', include('apps.ethnographic_survey.urls')),
     path('stories/', include('apps.stories.urls')),
     path('info/', include('apps.pages.urls')),
+    path('newsletter/', include('apps.newsletter.urls', namespace='newsletter')),
+
 
 
 

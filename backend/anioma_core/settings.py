@@ -84,7 +84,8 @@ INSTALLED_APPS = [
     'apps.ethnographic_survey',
     'apps.public_api',
     'apps.users',
-    'apps.pages', 
+    'apps.pages',
+    'apps.newsletter',
 ]
 
 # Custom user model
