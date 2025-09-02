@@ -4,9 +4,10 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
-from .models import Blog, Reaction, Comment
-from django.db.models import Q
+from .models import Blog, Reaction, Comment, VideoPost, VideoCategory
+from django.db.models import Q, F
 from .forms import BlogSearchForm
+from django.core.paginator import Paginator
 
 def blog_list(request):
     category = request.GET.get('category')
@@ -26,8 +27,8 @@ def blog_list(request):
 
 def blog_detail(request, slug):
     post = get_object_or_404(Blog, slug=slug, published=True)
-    post.views += 1
-    post.save(update_fields=['views'])
+    Blog.objects.filter(pk=post.pk).update(views=F('views') + 1)
+    post.refresh_from_db(fields=['views'])
     return render(request, 'blog/blog_detail.html', {'post': post})
 
 def blog_search(request):
@@ -58,6 +59,7 @@ def blog_search(request):
     })   
 
 @require_POST
+@login_required
 def add_reaction(request, post_id):
     blog_post = get_object_or_404(Blog, id=post_id)
     reaction_type = request.POST.get('reaction')
@@ -151,3 +153,44 @@ def add_reply(request, comment_id):
             'replies': parent_comment.replies.all()
         })
     })
+
+def video_list(request):
+    qs = (VideoPost.objects
+          .filter(is_published=True)
+          .order_by('-published_at', '-created_at')
+          .select_related('category'))
+
+    q = request.GET.get('q', '').strip()
+    category = request.GET.get('category', '').strip()
+
+    if q:
+        qs = qs.filter(
+            Q(title__icontains=q) |
+            Q(description__icontains=q) |
+            Q(category__name__icontains=q)
+        )
+
+    if category:
+        # accept either slug or exact name
+        qs = qs.filter(Q(category__slug=category) | Q(category__name__iexact=category))
+
+    paginator = Paginator(qs, 12)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    return render(request, "blog/video_list.html", {
+        "videos": page_obj.object_list,
+        "page_obj": page_obj,
+        "video_categories": VideoCategory.objects.all().order_by("name"),
+        "blog_categories": dict(Blog.CATEGORY_CHOICES), 
+        "current_category": category,
+        "search_query": q,
+    })
+
+
+def video_detail(request, slug):
+    video = get_object_or_404(VideoPost, slug=slug, is_published=True)
+    # increment views atomically
+    VideoPost.objects.filter(pk=video.pk).update(views=F("views") + 1)
+    video.refresh_from_db(fields=["views"])
+    return render(request, "blog/video_detail.html", {"video": video})
+

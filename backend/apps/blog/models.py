@@ -2,6 +2,7 @@
 from django.db import models
 from django.utils.text import slugify
 from storages.backends.s3boto3 import S3Boto3Storage
+from django.urls import reverse
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -97,3 +98,73 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.user.username} on {self.blog.title}"
+
+class VideoCategory(models.Model):
+    name = models.CharField(max_length=80, unique=True)
+    slug = models.SlugField(max_length=110, unique=True, blank=True)
+
+    class Meta:
+        verbose_name = "Video Category"
+        verbose_name_plural = "Video Categories"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        return super().save(*args, **kwargs)
+
+
+def video_upload_path(instance, filename):
+    return f"videos/{instance.slug}/{filename}"
+
+class VideoPost(models.Model):
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=220, unique=True, blank=True)
+    description = models.TextField(blank=True)
+    category = models.ForeignKey(
+        VideoCategory, related_name="videos", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    # Either upload a file OR use an external embed URL (YouTube/Vimeo/etc.)
+    video_file = models.FileField(upload_to=video_upload_path, blank=True, null=True)
+    external_url = models.URLField(blank=True)  # e.g. https://youtu.be/..., https://vimeo.com/...
+    thumbnail = models.ImageField(upload_to="videos/thumbnails/", blank=True, null=True)
+
+    is_published = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    published_at = models.DateTimeField(null=True, blank=True)
+    views = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["-published_at", "-created_at"]
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base = slugify(self.title)[:200]
+            candidate = base
+            i = 1
+            while VideoPost.objects.filter(slug=candidate).exclude(pk=self.pk).exists():
+                i += 1
+                candidate = f"{base}-{i}"
+            self.slug = candidate
+        return super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse("blog:video_detail", args=[self.slug])
+
+    @property
+    def is_external(self):
+        return bool(self.external_url) and not self.video_file
+
+    @property
+    def player_source(self):
+        """Return the src/iframe info the template should use."""
+        if self.is_external:
+            return self.external_url
+        return self.video_file.url if self.video_file else ""
