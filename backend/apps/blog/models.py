@@ -71,21 +71,50 @@ class Reaction(models.Model):
         ('insightful', '💡 Insightful'),
         ('laugh', '😂 Laugh'),
     ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_reactions')
+
+    user = models.ForeignKey(
+        User, null=True, blank=True,
+        on_delete=models.CASCADE,
+        related_name='blog_reactions'
+    )
+
+    session_key = models.CharField(
+        max_length=40, null=True, blank=True
+    )
+
     blog = models.ForeignKey(Blog, related_name='reactions', on_delete=models.CASCADE)
     type = models.CharField(max_length=20, choices=REACTION_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'blog', 'type')
+        unique_together = (
+            ('user', 'blog', 'type'),
+            ('session_key', 'blog', 'type'),
+        )
+
 
     def __str__(self):
-        return f"{self.user.username} reacted {self.get_type_display()} to {self.blog.title}"
+        user_label = self.user.username if self.user else "Guest"
+        return f"{user_label} reacted {self.get_type_display()} to {self.blog.title}"
+
 
 class Comment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_comments')
+    user = models.ForeignKey(
+        User, null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='blog_comments'
+    )
+
+    session_key = models.CharField(
+        max_length=40, null=True, blank=True
+    )
+
     blog = models.ForeignKey(Blog, related_name='comments', on_delete=models.CASCADE)
-    parent = models.ForeignKey('self', null=True, blank=True, related_name='replies', on_delete=models.CASCADE)
+    parent = models.ForeignKey(
+        'self', null=True, blank=True,
+        related_name='replies',
+        on_delete=models.CASCADE
+    )
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -97,7 +126,9 @@ class Comment(models.Model):
         return self.parent is not None
 
     def __str__(self):
-        return f"Comment by {self.user.username} on {self.blog.title}"
+        user_label = self.user.username if self.user else "Guest"
+        return f"Comment by {user_label} on {self.blog.title}"
+
 
 class VideoCategory(models.Model):
     name = models.CharField(max_length=80, unique=True)

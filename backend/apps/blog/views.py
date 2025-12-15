@@ -9,6 +9,12 @@ from django.db.models import Q, F
 from .forms import BlogSearchForm
 from django.core.paginator import Paginator
 
+
+def get_session_key(request):
+    if not request.session.session_key:
+        request.session.create()
+    return request.session.session_key
+
 def blog_list(request):
     category = request.GET.get('category')
     posts = Blog.objects.filter(published=True).order_by('-created_at')
@@ -59,36 +65,42 @@ def blog_search(request):
     })   
 
 @require_POST
-@login_required
 def add_reaction(request, post_id):
     blog_post = get_object_or_404(Blog, id=post_id)
     reaction_type = request.POST.get('reaction')
-    
+
     if not reaction_type:
         return JsonResponse({'status': 'error', 'message': 'Reaction type required'}, status=400)
-    
-    # Check if user already has this reaction
+
+    session_key = get_session_key(request)
+    user = request.user if request.user.is_authenticated else None
+
     existing_reaction = Reaction.objects.filter(
-        user=request.user,
         blog=blog_post,
-        type=reaction_type
+        type=reaction_type,
+        user=user if user else None,
+        session_key=None if user else session_key
     ).first()
-    
+
     if existing_reaction:
-        existing_reaction.delete()  # Toggle reaction off
+        existing_reaction.delete()
         action = 'removed'
     else:
-        # Remove any existing reaction of different type
-        Reaction.objects.filter(user=request.user, blog=blog_post).delete()
-        # Add new reaction
-        Reaction.objects.create(
-            user=request.user,
+        # remove other reactions by same user/session
+        Reaction.objects.filter(
             blog=blog_post,
+            user=user if user else None,
+            session_key=None if user else session_key
+        ).delete()
+
+        Reaction.objects.create(
+            blog=blog_post,
+            user=user,
+            session_key=None if user else session_key,
             type=reaction_type
         )
         action = 'added'
-    
-    # Return updated reaction counts
+
     reaction_counts = {
         'like': blog_post.reactions.filter(type='like').count(),
         'love': blog_post.reactions.filter(type='love').count(),
@@ -96,39 +108,42 @@ def add_reaction(request, post_id):
         'insightful': blog_post.reactions.filter(type='insightful').count(),
         'laugh': blog_post.reactions.filter(type='laugh').count(),
     }
-    
+
     return JsonResponse({
         'status': 'success',
         'action': action,
         'reaction': reaction_type,
-        'reaction_html': render_to_string('blog/blog_reaction_counts.html', {
-            'post': blog_post,
-            'user': request.user
-        }),
+        'reaction_html': render_to_string(
+            'blog/blog_reaction_counts.html',
+            {'post': blog_post, 'user': request.user}
+        ),
         'reaction_counts': reaction_counts
     })
 
 @require_POST
-@login_required
 def add_comment(request, post_id):
     blog_post = get_object_or_404(Blog, id=post_id)
     content = request.POST.get('content', '').strip()
-    
+
     if not content:
         return JsonResponse({'status': 'error', 'message': 'Comment cannot be empty'}, status=400)
-    
-    comment = Comment.objects.create(
+
+    session_key = get_session_key(request)
+    user = request.user if request.user.is_authenticated else None
+
+    Comment.objects.create(
         blog=blog_post,
-        user=request.user,
+        user=user,
+        session_key=None if user else session_key,
         content=content
     )
-    
+
     return JsonResponse({
         'status': 'success',
-        'comments_html': render_to_string('blog/comments.html', {
-            'post': blog_post,
-            'user': request.user
-        })
+        'comments_html': render_to_string(
+            'blog/comments.html',
+            {'post': blog_post, 'user': request.user}
+        )
     })
 
 @require_POST
@@ -136,23 +151,29 @@ def add_comment(request, post_id):
 def add_reply(request, comment_id):
     parent_comment = get_object_or_404(Comment, id=comment_id)
     content = request.POST.get('content', '').strip()
-    
+
     if not content:
         return JsonResponse({'status': 'error', 'message': 'Reply cannot be empty'}, status=400)
-    
-    reply = Comment.objects.create(
+
+    session_key = get_session_key(request)
+    user = request.user if request.user.is_authenticated else None
+
+    Comment.objects.create(
         blog=parent_comment.blog,
-        user=request.user,
-        content=content,
-        parent=parent_comment
+        parent=parent_comment,
+        user=user,
+        session_key=None if user else session_key,
+        content=content
     )
-    
+
     return JsonResponse({
         'status': 'success',
-        'replies_html': render_to_string('blog/replies.html', {
-            'replies': parent_comment.replies.all()
-        })
+        'replies_html': render_to_string(
+            'blog/replies.html',
+            {'replies': parent_comment.replies.all()}
+        )
     })
+
 
 def video_list(request):
     qs = (VideoPost.objects
