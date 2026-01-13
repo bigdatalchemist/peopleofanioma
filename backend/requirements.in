@@ -36,7 +36,7 @@ openpyxl==3.1.2
 XlsxWriter==3.2.0
 
 # Audio
-pyttsx3==2.90
+
 gTTS==2.5.1
 
 # Utility
