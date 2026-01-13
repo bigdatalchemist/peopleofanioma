@@ -453,6 +453,8 @@ weasel==0.3.4
     # via spacy
 websockets==10.4
     # via pyppeteer
+whitenoise==6.6.0
+    # via -r backend/requirements.in
 wordcloud==1.9.3
     # via -r backend/requirements.in
 xlsxwriter==3.2.0
