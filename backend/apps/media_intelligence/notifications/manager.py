@@ -7,7 +7,7 @@ from typing import Dict
 import sys
 import os
 
-from backend.apps.media_intelligence.intelligence import severity
+from apps.media_intelligence.intelligence import severity
 
 # Add Django to path if needed
 try:

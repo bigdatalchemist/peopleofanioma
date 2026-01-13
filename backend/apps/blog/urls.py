@@ -1,6 +1,6 @@
 from django.urls import path
 
-from backend.apps.blog import views
+from apps.blog import views
 from . import views
 from .views import blog_search
 

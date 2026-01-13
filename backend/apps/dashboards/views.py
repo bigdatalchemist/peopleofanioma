@@ -2,7 +2,7 @@
 from django.shortcuts import render
 from django.utils import timezone
 from datetime import timedelta
-from backend.apps.blog.models import Blog
+from apps.blog.models import Blog
 from apps.stories.models import Story
 from django.db.models import Count, Q
 
