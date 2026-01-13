@@ -46,7 +46,7 @@
           controls
           poster="{% if video.thumbnail %}{{ video.thumbnail.url }}{% endif %}"
         >
-          <source src="{{ video.video_file.url }}">
+          <source src="{{ video.video_file }}">
           Your browser does not support the video tag.
         </video>
       {% else %}

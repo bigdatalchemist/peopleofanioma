@@ -137,7 +137,7 @@ class VideoPost(models.Model):
         related_name="uploaded_videos"
     )
     # Either upload a file OR use an external embed URL (YouTube/Vimeo/etc.)
-    video_url = models.URLField( blank=True, null=True, help_text="S3 or external video URL (YouTube, Vimeo, etc.)")
+    video_file = models.URLField(blank=True, null=True, help_text="S3 or external video URL (YouTube, Vimeo, etc.)")
     external_url = models.URLField(blank=True)  # e.g. https://youtu.be/..., https://vimeo.com/...
     thumbnail = models.ImageField(upload_to="videos/thumbnails/", blank=True, null=True)
 
@@ -156,12 +156,12 @@ class VideoPost(models.Model):
     def clean(self):
         from django.core.exceptions import ValidationError
 
-        if self.video_url and self.external_url:
+        if self.video_file and self.external_url:
             raise ValidationError(
                 "Provide either a video URL or an external embed URL, not both."
             )
 
-        if not self.video_url and not self.external_url:
+        if not self.video_file and not self.external_url:
             raise ValidationError(
                 "You must provide either a video URL or an external embed URL."
             )
@@ -182,11 +182,11 @@ class VideoPost(models.Model):
 
     @property
     def is_external(self):
-        return bool(self.external_url) and not self.video_url
+        return bool(self.external_url) and not self.video_file
 
     @property
     def player_source(self):
         """Return the src/iframe info the template should use."""
         if self.is_external:
             return self.external_url
-        return self.video_url or ""
+        return self.video_file or ""

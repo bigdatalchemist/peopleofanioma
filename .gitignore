@@ -47,3 +47,4 @@ settings_local.py
 requirements_notifications.txt
 requirements-dev-local.txt
 constraints-dev.txt
+requirements-dev.in
