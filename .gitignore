@@ -4,6 +4,7 @@ __pycache__/
 
 # Virtual Environment
 venv/
+venv310/
 
 # Django
 db.sqlite3
@@ -17,6 +18,7 @@ db.sqlite3
 # Environment
 backend/.env
 *.env
+.idea/
 
 # VS Code
 .vscode/
@@ -41,3 +43,7 @@ local_settings.py
 base2.html
 base3.html
 base4.html
+settings_local.py
+requirements_notifications.txt
+requirements-dev-local.txt
+constraints-dev.txt

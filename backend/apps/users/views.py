@@ -5,6 +5,7 @@ from .forms import CustomUserCreationForm, CustomLoginForm, BioUpdateForm, Profi
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from apps.diaspora_tracker.forms import DiasporaEntryForm
+from apps.diaspora_tracker.models import DiasporaEntry
 from apps.stories.forms import StoryForm
 from apps.stories.models import Story
 from django.views.generic.edit import UpdateView
@@ -48,11 +49,24 @@ def profile(request):
                 entry.save()
                 return redirect('users:profile')
     
+    approved_stories = Story.objects.filter(
+        user=request.user,
+        is_approved=True
+    ).order_by('-date_submitted')
+
+    user_stories = Story.objects.filter(
+        user=request.user
+    ).order_by('-date_submitted')
+
+    diaspora_entries = DiasporaEntry.objects.filter(
+        email=request.user.email
+    ).order_by('-timestamp')
+    
     context = {
         'diaspora_form': DiasporaEntryForm(),
         'story_form': StoryForm(),
-        'approved_stories': request.user.approved_stories(),
-        'diaspora_entries': request.user.diaspora_entries(),
+        'approved_stories': approved_stories,
+        'diaspora_entries': diaspora_entries,
         'diaspora_tracker_url': reverse_lazy('diaspora_tracker'),
         'user_stories': Story.objects.filter(user=request.user).order_by('-date_submitted'), 
     }

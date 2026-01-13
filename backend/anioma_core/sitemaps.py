@@ -1,7 +1,7 @@
 from django.contrib.sitemaps import Sitemap
 from django.shortcuts import reverse
 from apps.stories.models import Story
-from apps.blog.models import Blog
+from backend.apps.blog.models import Blog
 
 class StaticViewSitemap(Sitemap):
     priority = 0.5

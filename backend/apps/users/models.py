@@ -1,6 +1,6 @@
 # apps.users.models.py
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group, Permission
 from storages.backends.s3boto3 import S3Boto3Storage
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -8,6 +8,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 class CustomUser(AbstractUser):
+    groups = models.ManyToManyField(
+        Group,
+        related_name="customuser_set",
+        blank=True,
+        help_text="The groups this user belongs to.",
+        verbose_name="groups",
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        related_name="customuser_set",
+        blank=True,
+        help_text="Specific permissions for this user.",
+        verbose_name="user permissions",
+    )
+
     # Add your custom fields below
     bio = models.TextField(blank=True, null=True)
     is_verified = models.BooleanField(default=False)

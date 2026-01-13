@@ -4,19 +4,41 @@
 #
 #    pip-compile --output-file=backend/requirements.txt backend/requirements.in
 #
+aiohappyeyeballs==2.6.1
+    # via aiohttp
+aiohttp==3.13.3
+    # via -r backend/requirements.in
+aiosignal==1.4.0
+    # via aiohttp
 annotated-types==0.7.0
     # via pydantic
+appdirs==1.4.4
+    # via pyppeteer
+apscheduler==3.6.3
+    # via python-telegram-bot
 asgiref==3.8.1
     # via
     #   django
     #   django-browser-reload
     #   django-cors-headers
+async-timeout==5.0.1
+    # via aiohttp
 attrs==25.3.0
-    # via fiona
+    # via
+    #   aiohttp
+    #   fiona
+beautifulsoup4==4.14.3
+    # via
+    #   -r backend/requirements.in
+    #   bs4
 blis==0.7.11
     # via thinc
 branca==0.8.1
     # via folium
+bs4==0.0.2
+    # via requests-html
+cachetools==4.2.2
+    # via python-telegram-bot
 catalogue==2.0.10
     # via
     #   spacy
@@ -25,7 +47,9 @@ catalogue==2.0.10
 certifi==2025.6.15
     # via
     #   fiona
+    #   pyppeteer
     #   pyproj
+    #   python-telegram-bot
     #   requests
 charset-normalizer==3.4.2
     # via requests
@@ -56,6 +80,8 @@ confection==0.1.5
     #   weasel
 contourpy==1.3.2
     # via matplotlib
+cssselect==1.3.0
+    # via pyquery
 cycler==0.12.1
     # via matplotlib
 cymem==2.0.11
@@ -63,6 +89,10 @@ cymem==2.0.11
     #   preshed
     #   spacy
     #   thinc
+dateparser==1.2.2
+    # via facebook-scraper
+demjson3==3.0.6
+    # via facebook-scraper
 django==5.2
     # via
     #   -r backend/requirements.in
@@ -86,6 +116,10 @@ drf-yasg==1.21.10
     # via -r backend/requirements.in
 et-xmlfile==2.0.0
     # via openpyxl
+facebook-scraper==0.2.59
+    # via -r backend/requirements.in
+fake-useragent==2.2.0
+    # via requests-html
 filelock==3.18.0
     # via
     #   huggingface-hub
@@ -97,10 +131,16 @@ folium==0.14.0
     # via -r backend/requirements.in
 fonttools==4.58.4
     # via matplotlib
+frozenlist==1.8.0
+    # via
+    #   aiohttp
+    #   aiosignal
 fsspec==2025.5.1
     # via
     #   huggingface-hub
     #   torch
+gensim==4.3.3
+    # via -r backend/requirements.in
 geopandas==0.13.2
     # via -r backend/requirements.in
 gtts==2.5.1
@@ -113,7 +153,11 @@ huggingface-hub==0.33.0
     #   tokenizers
     #   transformers
 idna==3.10
-    # via requests
+    # via
+    #   requests
+    #   yarl
+importlib-metadata==8.7.1
+    # via pyppeteer
 inflection==0.5.1
     # via drf-yasg
 jinja2==3.1.6
@@ -133,7 +177,9 @@ langcodes==3.5.0
 language-data==1.3.0
     # via langcodes
 lxml==5.4.0
-    # via python-docx
+    # via
+    #   pyquery
+    #   python-docx
 marisa-trie==1.2.1
     # via language-data
 markupsafe==3.0.2
@@ -144,6 +190,10 @@ matplotlib==3.7.3
     #   wordcloud
 mpmath==1.3.0
     # via sympy
+multidict==6.7.0
+    # via
+    #   aiohttp
+    #   yarl
 murmurhash==1.0.13
     # via
     #   preshed
@@ -161,6 +211,7 @@ numpy==1.24.4
     #   blis
     #   contourpy
     #   folium
+    #   gensim
     #   matplotlib
     #   pandas
     #   scikit-learn
@@ -172,6 +223,10 @@ numpy==1.24.4
     #   torchvision
     #   transformers
     #   wordcloud
+oauthlib==3.3.1
+    # via
+    #   requests-oauthlib
+    #   tweepy
 openpyxl==3.1.2
     # via -r backend/requirements.in
 packaging==25.0
@@ -190,6 +245,8 @@ pandas==2.2.1
     # via
     #   -r backend/requirements.in
     #   geopandas
+parse==1.20.2
+    # via requests-html
 pillow==11.2.1
     # via
     #   matplotlib
@@ -201,6 +258,10 @@ preshed==3.0.10
     # via
     #   spacy
     #   thinc
+propcache==0.4.1
+    # via
+    #   aiohttp
+    #   yarl
 psycopg2-binary==2.9.9
     # via -r backend/requirements.in
 pydantic==2.11.7
@@ -211,14 +272,25 @@ pydantic==2.11.7
     #   weasel
 pydantic-core==2.33.2
     # via pydantic
+pydub==0.25.1
+    # via -r backend/requirements.in
+pyee==11.1.1
+    # via pyppeteer
 pyparsing==3.2.3
     # via matplotlib
 pypdf2==3.0.1
+    # via -r backend/requirements.in
+pypiwin32==223
     # via pyttsx3
+pyppeteer==2.0.0
+    # via requests-html
 pyproj==3.7.1
     # via geopandas
+pyquery==2.0.1
+    # via requests-html
 python-dateutil==2.9.0.post0
     # via
+    #   dateparser
     #   matplotlib
     #   pandas
 python-decouple==3.8
@@ -227,12 +299,20 @@ python-docx==1.1.0
     # via -r backend/requirements.in
 python-dotenv==1.0.1
     # via -r backend/requirements.in
+python-telegram-bot==13.15
+    # via -r backend/requirements.in
 pyttsx3==2.90
     # via -r backend/requirements.in
 pytz==2025.2
     # via
+    #   apscheduler
+    #   dateparser
     #   drf-yasg
     #   pandas
+    #   python-telegram-bot
+pywin32==311
+    # via
+    #   pypiwin32
     #   pyttsx3
 pyyaml==6.0.1
     # via
@@ -242,6 +322,7 @@ pyyaml==6.0.1
     #   transformers
 regex==2024.11.6
     # via
+    #   dateparser
     #   nltk
     #   transformers
 requests==2.31.0
@@ -250,9 +331,16 @@ requests==2.31.0
     #   folium
     #   gtts
     #   huggingface-hub
+    #   requests-html
+    #   requests-oauthlib
     #   spacy
     #   transformers
+    #   tweepy
     #   weasel
+requests-html==0.10.0
+    # via facebook-scraper
+requests-oauthlib==2.0.0
+    # via tweepy
 safetensors==0.5.3
     # via transformers
 scikit-learn==1.3.2
@@ -261,6 +349,7 @@ scikit-learn==1.3.2
     #   sentence-transformers
 scipy==1.13.1
     # via
+    #   gensim
     #   scikit-learn
     #   sentence-transformers
 sentence-transformers==2.2.2
@@ -270,11 +359,16 @@ sentencepiece==0.2.0
 shapely==2.1.1
     # via geopandas
 six==1.17.0
-    # via python-dateutil
+    # via
+    #   apscheduler
+    #   python-dateutil
 smart-open==6.4.0
     # via
+    #   gensim
     #   spacy
     #   weasel
+soupsieve==2.8.1
+    # via beautifulsoup4
 spacy==3.7.2
     # via -r backend/requirements.in
 spacy-legacy==3.0.12
@@ -306,10 +400,13 @@ torch==2.2.2
     #   torchvision
 torchvision==0.17.2
     # via sentence-transformers
+tornado==6.1
+    # via python-telegram-bot
 tqdm==4.67.1
     # via
     #   huggingface-hub
     #   nltk
+    #   pyppeteer
     #   sentence-transformers
     #   spacy
     #   transformers
@@ -317,17 +414,23 @@ transformers==4.36.2
     # via
     #   -r backend/requirements.in
     #   sentence-transformers
+tweepy==4.16.0
+    # via -r backend/requirements.in
 typer==0.9.4
     # via
     #   spacy
     #   weasel
 typing-extensions==4.14.0
     # via
+    #   aiosignal
     #   asgiref
+    #   beautifulsoup4
     #   cloudpathlib
     #   huggingface-hub
+    #   multidict
     #   pydantic
     #   pydantic-core
+    #   pyee
     #   python-docx
     #   torch
     #   typer
@@ -338,10 +441,19 @@ tzdata==2025.2
     # via
     #   django
     #   pandas
+    #   tzlocal
+tzlocal==5.3.1
+    # via
+    #   apscheduler
+    #   dateparser
 uritemplate==4.2.0
     # via drf-yasg
-urllib3<2.1,>=1.25.4
-    # via requests
+urllib3==1.26.20
+    # via
+    #   pyppeteer
+    #   requests
+w3lib==2.3.1
+    # via requests-html
 wasabi==1.1.3
     # via
     #   spacy
@@ -349,17 +461,16 @@ wasabi==1.1.3
     #   weasel
 weasel==0.3.4
     # via spacy
+websockets==10.4
+    # via pyppeteer
 wordcloud==1.9.3
     # via -r backend/requirements.in
 xlsxwriter==3.2.0
     # via -r backend/requirements.in
-pydub==0.25.1
-    # via -r backend/requirements.in
-gensim==4.3.3
-    # via -r backend/requirements.in
-whitenoise==6.6.0
-django-storages==1.13.2 
-boto3==1.28.57
+yarl==1.22.0
+    # via aiohttp
+zipp==3.23.0
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

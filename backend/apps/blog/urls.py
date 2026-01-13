@@ -1,4 +1,6 @@
 from django.urls import path
+
+from backend.apps.blog import views
 from . import views
 from .views import blog_search
 
@@ -9,6 +11,7 @@ urlpatterns = [
 
     # Specific routes FIRST
     path('search/', blog_search, name='blog_search'),
+    path('videos/presign/', views.generate_presigned_url, name='generate_presigned_url'),
     path('videos/', views.video_list, name='video_list'),
     path('videos/<slug:slug>/', views.video_detail, name='video_detail'),
     path('<int:post_id>/react/', views.add_reaction, name='add_reaction'),

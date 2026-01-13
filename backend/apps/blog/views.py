@@ -3,17 +3,15 @@ from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Blog, Reaction, Comment, VideoPost, VideoCategory
 from django.db.models import Q, F
 from .forms import BlogSearchForm
 from django.core.paginator import Paginator
+import boto3, uuid, json
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 
-
-def get_session_key(request):
-    if not request.session.session_key:
-        request.session.create()
-    return request.session.session_key
 
 def blog_list(request):
     category = request.GET.get('category')
@@ -68,39 +66,32 @@ def blog_search(request):
 def add_reaction(request, post_id):
     blog_post = get_object_or_404(Blog, id=post_id)
     reaction_type = request.POST.get('reaction')
-
+    
     if not reaction_type:
         return JsonResponse({'status': 'error', 'message': 'Reaction type required'}, status=400)
-
-    session_key = get_session_key(request)
-    user = request.user if request.user.is_authenticated else None
-
+    
+    # Check if user already has this reaction
     existing_reaction = Reaction.objects.filter(
+        user=request.user,
         blog=blog_post,
-        type=reaction_type,
-        user=user if user else None,
-        session_key=None if user else session_key
+        type=reaction_type
     ).first()
-
+    
     if existing_reaction:
-        existing_reaction.delete()
+        existing_reaction.delete()  # Toggle reaction off
         action = 'removed'
     else:
-        # remove other reactions by same user/session
-        Reaction.objects.filter(
-            blog=blog_post,
-            user=user if user else None,
-            session_key=None if user else session_key
-        ).delete()
-
+        # Remove any existing reaction of different type
+        Reaction.objects.filter(user=request.user, blog=blog_post).delete()
+        # Add new reaction
         Reaction.objects.create(
+            user=request.user,
             blog=blog_post,
-            user=user,
-            session_key=None if user else session_key,
             type=reaction_type
         )
         action = 'added'
-
+    
+    # Return updated reaction counts
     reaction_counts = {
         'like': blog_post.reactions.filter(type='like').count(),
         'love': blog_post.reactions.filter(type='love').count(),
@@ -108,15 +99,15 @@ def add_reaction(request, post_id):
         'insightful': blog_post.reactions.filter(type='insightful').count(),
         'laugh': blog_post.reactions.filter(type='laugh').count(),
     }
-
+    
     return JsonResponse({
         'status': 'success',
         'action': action,
         'reaction': reaction_type,
-        'reaction_html': render_to_string(
-            'blog/blog_reaction_counts.html',
-            {'post': blog_post, 'user': request.user}
-        ),
+        'reaction_html': render_to_string('blog/blog_reaction_counts.html', {
+            'post': blog_post,
+            'user': request.user
+        }),
         'reaction_counts': reaction_counts
     })
 
@@ -124,56 +115,45 @@ def add_reaction(request, post_id):
 def add_comment(request, post_id):
     blog_post = get_object_or_404(Blog, id=post_id)
     content = request.POST.get('content', '').strip()
-
+    
     if not content:
         return JsonResponse({'status': 'error', 'message': 'Comment cannot be empty'}, status=400)
-
-    session_key = get_session_key(request)
-    user = request.user if request.user.is_authenticated else None
-
-    Comment.objects.create(
+    
+    comment = Comment.objects.create(
         blog=blog_post,
-        user=user,
-        session_key=None if user else session_key,
+        user=request.user,
         content=content
     )
-
+    
     return JsonResponse({
         'status': 'success',
-        'comments_html': render_to_string(
-            'blog/comments.html',
-            {'post': blog_post, 'user': request.user}
-        )
+        'comments_html': render_to_string('blog/comments.html', {
+            'post': blog_post,
+            'user': request.user
+        })
     })
 
 @require_POST
-@login_required
 def add_reply(request, comment_id):
     parent_comment = get_object_or_404(Comment, id=comment_id)
     content = request.POST.get('content', '').strip()
-
+    
     if not content:
         return JsonResponse({'status': 'error', 'message': 'Reply cannot be empty'}, status=400)
-
-    session_key = get_session_key(request)
-    user = request.user if request.user.is_authenticated else None
-
-    Comment.objects.create(
+    
+    reply = Comment.objects.create(
         blog=parent_comment.blog,
-        parent=parent_comment,
-        user=user,
-        session_key=None if user else session_key,
-        content=content
+        user=request.user,
+        content=content,
+        parent=parent_comment
     )
-
+    
     return JsonResponse({
         'status': 'success',
-        'replies_html': render_to_string(
-            'blog/replies.html',
-            {'replies': parent_comment.replies.all()}
-        )
+        'replies_html': render_to_string('blog/replies.html', {
+            'replies': parent_comment.replies.all()
+        })
     })
-
 
 def video_list(request):
     qs = (VideoPost.objects
@@ -215,3 +195,81 @@ def video_detail(request, slug):
     video.refresh_from_db(fields=["views"])
     return render(request, "blog/video_detail.html", {"video": video})
 
+
+@csrf_exempt # Presigned S3 upload endpoint; protected by staff auth
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def generate_presigned_url(request):
+    """
+    Returns:
+    - LOCAL DEV: fake upload target (Django MEDIA_ROOT)
+    - PRODUCTION: real S3 presigned POST data
+    """
+
+    try:
+        data = json.loads(request.body or "{}")
+        file_name = data.get("file_name")
+        file_type = data.get("file_type")
+
+        if not file_name or not file_type:
+            return JsonResponse(
+                {"error": "Missing file_name or file_type"},
+                status=400
+            )
+        
+        # ✅ MIME TYPE GUARD — RIGHT HERE
+        ALLOWED_VIDEO_MIME_TYPES = {
+            "video/mp4",
+            "video/webm",
+            "video/ogg",
+        }
+
+        if file_type not in ALLOWED_VIDEO_MIME_TYPES:
+            return JsonResponse(
+                {"error": "Unsupported video type"},
+                status=400
+            )
+
+        
+        # LOCAL DEVELOPMENT (NO AWS)
+        if getattr(settings, "USE_LOCAL_STORAGE", False):
+            fake_key = f"videos/uploads/{uuid.uuid4()}-{file_name}"
+
+            return JsonResponse({
+                "local": True,
+                "url": f"{settings.MEDIA_URL}{fake_key}",
+                "key": fake_key,
+            })
+
+        # PRODUCTION (AWS S3)
+        s3 = boto3.client(
+            "s3",
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        )
+
+        key = f"videos/uploads/{uuid.uuid4()}-{file_name}"
+
+        MAX_VIDEO_SIZE = 200 * 1024 * 1024  # 200 MB
+
+
+        presigned_post = s3.generate_presigned_post(
+            Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+            Key=key,
+            Fields={"Content-Type": file_type},
+            Conditions=[
+                {"Content-Type": file_type},
+                ["content-length-range", 1, MAX_VIDEO_SIZE],
+                ],
+            ExpiresIn=3600,
+        )
+
+        return JsonResponse({
+            "local": False,
+            "data": presigned_post,
+            "url": f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{key}",
+        })
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

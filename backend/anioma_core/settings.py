@@ -86,10 +86,12 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.pages',
     'apps.newsletter',
+    'apps.media_intelligence',
 ]
 
 # Custom user model
 AUTH_USER_MODEL = 'users.CustomUser'
+LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'users:profile'
 LOGOUT_REDIRECT_URL = 'users:login'
 
@@ -251,8 +253,63 @@ STORAGES = {
     },
 }
 
-# Remove local media root since we're using B2
-# DELETED: MEDIA_ROOT = BASE_DIR / "media"  ← No longer needed
+NEWS_TRACKER_CONFIG = {
+    "notification": {
+        "console": {
+            "enabled": True,  # keep this as fallback
+        },
+        "telegram": {
+            "enabled": bool(os.getenv("TELEGRAM_BOT_TOKEN") and os.getenv("TELEGRAM_CHAT_ID")),
+            "bot_token": os.getenv("TELEGRAM_BOT_TOKEN"),
+            "chat_id": os.getenv("TELEGRAM_CHAT_ID"),
+        }
+    }
+}
+
+
+MEDIA_INTELLIGENCE_PLATFORMS = {
+     "website": {
+        "enabled": True,
+        "requires": [],
+    },
+    "twitter": {
+        "enabled": True,
+        "requires": ["tweepy"],
+    },
+    "facebook": {
+        "enabled": True,
+        "requires": ["facebook_scraper"],
+    },
+    "reddit": {
+        "enabled": False,
+        "requires": ["praw"],
+    },
+    "instagram": {
+        "enabled": False,
+        "requires": ["instaloader"],
+    },
+    "youtube": {
+        "enabled": False,
+        "requires": ["google-api-python-client"],
+    },
+}
+
+MEDIA_INTELLIGENCE_SECRETS = {
+    "twitter": {
+        "bearer_token": os.getenv("TWITTER_BEARER_TOKEN"),
+        "consumer_key": os.getenv("TWITTER_API_KEY"),
+        "consumer_secret": os.getenv("TWITTER_API_SECRET"),
+        "access_token": os.getenv("TWITTER_ACCESS_TOKEN"),
+        "access_token_secret": os.getenv("TWITTER_ACCESS_SECRET"),
+    },
+    "facebook": {
+        "access_token": os.getenv("FACEBOOK_ACCESS_TOKEN"),
+    },
+    "youtube": {
+        "api_key": os.getenv("YOUTUBE_API_KEY"),
+    },
+}
+
 
 
 # Default primary key field type

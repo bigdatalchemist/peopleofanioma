@@ -48,3 +48,9 @@ geopandas==0.13.2
 django-browser-reload==1.18.0
 pydub==0.25.1
 gensim==4.3.3
+aiohttp
+beautifulsoup4
+requests
+tweepy
+facebook-scraper
+python-telegram-bot==13.15

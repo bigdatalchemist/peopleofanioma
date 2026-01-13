@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.text import slugify
 from storages.backends.s3boto3 import S3Boto3Storage
 from django.urls import reverse
+from django.conf import settings
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -71,50 +72,21 @@ class Reaction(models.Model):
         ('insightful', '💡 Insightful'),
         ('laugh', '😂 Laugh'),
     ]
-
-    user = models.ForeignKey(
-        User, null=True, blank=True,
-        on_delete=models.CASCADE,
-        related_name='blog_reactions'
-    )
-
-    session_key = models.CharField(
-        max_length=40, null=True, blank=True
-    )
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_reactions')
     blog = models.ForeignKey(Blog, related_name='reactions', on_delete=models.CASCADE)
     type = models.CharField(max_length=20, choices=REACTION_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = (
-            ('user', 'blog', 'type'),
-            ('session_key', 'blog', 'type'),
-        )
-
+        unique_together = ('user', 'blog', 'type')
 
     def __str__(self):
-        user_label = self.user.username if self.user else "Guest"
-        return f"{user_label} reacted {self.get_type_display()} to {self.blog.title}"
-
+        return f"{self.user.username} reacted {self.get_type_display()} to {self.blog.title}"
 
 class Comment(models.Model):
-    user = models.ForeignKey(
-        User, null=True, blank=True,
-        on_delete=models.SET_NULL,
-        related_name='blog_comments'
-    )
-
-    session_key = models.CharField(
-        max_length=40, null=True, blank=True
-    )
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_comments')
     blog = models.ForeignKey(Blog, related_name='comments', on_delete=models.CASCADE)
-    parent = models.ForeignKey(
-        'self', null=True, blank=True,
-        related_name='replies',
-        on_delete=models.CASCADE
-    )
+    parent = models.ForeignKey('self', null=True, blank=True, related_name='replies', on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -126,9 +98,7 @@ class Comment(models.Model):
         return self.parent is not None
 
     def __str__(self):
-        user_label = self.user.username if self.user else "Guest"
-        return f"Comment by {user_label} on {self.blog.title}"
-
+        return f"Comment by {self.user.username} on {self.blog.title}"
 
 class VideoCategory(models.Model):
     name = models.CharField(max_length=80, unique=True)
@@ -158,8 +128,16 @@ class VideoPost(models.Model):
     category = models.ForeignKey(
         VideoCategory, related_name="videos", on_delete=models.SET_NULL, null=True, blank=True
     )
+
+    uploader = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="uploaded_videos"
+    )
     # Either upload a file OR use an external embed URL (YouTube/Vimeo/etc.)
-    video_file = models.FileField(upload_to=video_upload_path, blank=True, null=True)
+    video_url = models.URLField( blank=True, null=True, help_text="S3 or external video URL (YouTube, Vimeo, etc.)")
     external_url = models.URLField(blank=True)  # e.g. https://youtu.be/..., https://vimeo.com/...
     thumbnail = models.ImageField(upload_to="videos/thumbnails/", blank=True, null=True)
 
@@ -174,6 +152,19 @@ class VideoPost(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        if self.video_url and self.external_url:
+            raise ValidationError(
+                "Provide either a video URL or an external embed URL, not both."
+            )
+
+        if not self.video_url and not self.external_url:
+            raise ValidationError(
+                "You must provide either a video URL or an external embed URL."
+            )
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -191,11 +182,11 @@ class VideoPost(models.Model):
 
     @property
     def is_external(self):
-        return bool(self.external_url) and not self.video_file
+        return bool(self.external_url) and not self.video_url
 
     @property
     def player_source(self):
         """Return the src/iframe info the template should use."""
         if self.is_external:
             return self.external_url
-        return self.video_file.url if self.video_file else ""
+        return self.video_url or ""
