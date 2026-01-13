@@ -305,9 +305,6 @@ MEDIA_INTELLIGENCE_SECRETS = {
     "facebook": {
         "access_token": os.getenv("FACEBOOK_ACCESS_TOKEN"),
     },
-    "youtube": {
-        "api_key": os.getenv("YOUTUBE_API_KEY"),
-    },
 }
 
 

@@ -208,30 +208,6 @@ Detected by Anioma News Tracker
                 logger.error(f"Error sending Telegram: {e}")
                 success = False
         
-        # Try Twilio if configured
-        twilio_config = self.config.get('notification', {}).get('twilio', {})
-        if twilio_config.get('enabled', False):
-            try:
-                from twilio.rest import Client
-                
-                if all(k in twilio_config for k in ['account_sid', 'auth_token', 'from_number', 'to_number']):
-                    client = Client(twilio_config['account_sid'], twilio_config['auth_token'])
-                    
-                    client.messages.create(
-                        body=message[:1600],  # SMS length limit
-                        from_=twilio_config['from_number'],
-                        to=twilio_config['to_number']
-                    )
-                    logger.info(f"SMS notification sent")
-                else:
-                    logger.warning("Twilio configured but missing credentials")
-                    
-            except ImportError:
-                logger.warning("twilio not installed")
-            except Exception as e:
-                logger.error(f"Error sending SMS: {e}")
-                success = False
-        
         return success
 
 
