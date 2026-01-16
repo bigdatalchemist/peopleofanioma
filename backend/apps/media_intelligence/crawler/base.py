@@ -71,7 +71,8 @@ class NewsCrawlerService:
                         results['new_items_stored'] += 1
                         
                         # Send notification
-                        if self._should_send_notification(saved_item):
+                        should_notify = await sync_to_async(self._should_send_notification)(saved_item)
+                        if should_notify:
                             await self._send_notification(saved_item)
                             results['notifications_sent'] += 1
                             
@@ -167,6 +168,12 @@ class NewsCrawlerService:
         
         # ❌ Policy gate check
         if not is_notification_eligible(news_item):
+            logger.info(
+            f"Policy block | "
+            f"relevance={news_item.relevance_score} "
+            f"confidence={news_item.confidence_score} "
+            f"severity={news_item.severity}"
+        )
             return False
         
         # 🔥 BREAKING NEWS OVERRIDE

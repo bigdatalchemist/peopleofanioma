@@ -21,6 +21,8 @@ class ContentAggregator:
         """Fetch content from all active sources"""
         all_content = []
         active_sources = NewsSource.objects.filter(is_active=True)
+        logger.warning(f"[MEDIA_INTEL DEBUG] Active sources count: {active_sources.count()}")
+        logger.warning(f"[MEDIA_INTEL DEBUG] Source types: {[s.source_type for s in active_sources]}")
         
         tasks = []
         for source in active_sources:
