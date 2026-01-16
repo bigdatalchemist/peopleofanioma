@@ -118,6 +118,8 @@ facebook-scraper==0.2.59
     # via -r backend/requirements.in
 fake-useragent==2.2.0
     # via requests-html
+feedparser==6.0.12
+    # via -r backend/requirements.in
 filelock==3.18.0
     # via
     #   huggingface-hub
@@ -346,6 +348,8 @@ sentence-transformers==2.2.2
     # via -r backend/requirements.in
 sentencepiece==0.2.0
     # via sentence-transformers
+sgmllib3k==1.0.0
+    # via feedparser
 shapely==2.1.1
     # via geopandas
 six==1.17.0

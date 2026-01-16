@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import nltk
 from storages.backends.s3boto3 import S3Boto3Storage
+from apps.media_intelligence.constants import SourceType
 
 # Add NLTK data path globally
 NLTK_DATA_PATH = os.path.join(os.path.expanduser("~"), "AppData", "Roaming", "nltk_data")
@@ -268,29 +269,26 @@ NEWS_TRACKER_CONFIG = {
 
 
 MEDIA_INTELLIGENCE_PLATFORMS = {
-     "website": {
+    SourceType.WEBSITE: {
         "enabled": True,
         "requires": [],
     },
-    "twitter": {
+    SourceType.RSS: {
+    "enabled": True,
+    "requires": ["feedparser"],
+    },
+
+    SourceType.TWITTER: {
         "enabled": True,
         "requires": ["tweepy"],
     },
-    "facebook": {
+    SourceType.FACEBOOK: {
         "enabled": True,
         "requires": ["facebook_scraper"],
     },
-    "reddit": {
-        "enabled": False,
-        "requires": ["praw"],
-    },
-    "instagram": {
-        "enabled": False,
-        "requires": ["instaloader"],
-    },
-    "youtube": {
-        "enabled": False,
-        "requires": ["google-api-python-client"],
+    SourceType.TIKTOK: {        
+        "enabled": True,
+        "requires": ["tiktokapipy"],
     },
 }
 

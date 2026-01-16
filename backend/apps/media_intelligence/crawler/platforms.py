@@ -1,3 +1,4 @@
+# backend/apps/media_intelligence/crawler/platforms.py
 import asyncio
 import aiohttp
 import requests
@@ -7,6 +8,9 @@ import logging
 from datetime import datetime, timedelta
 import importlib
 from django.conf import settings
+from apps.media_intelligence.constants import SourceType
+import feedparser
+
 
 logger = logging.getLogger(__name__)
 
@@ -50,28 +54,33 @@ class WebsiteMonitor(BaseMonitor):
     
     async def fetch_content(self) -> List[Dict]:
         try:
+            url = self.config["url"]
+
+            # Otherwise treat as HTML
             async with aiohttp.ClientSession() as session:
                 headers = {
-                    'User-Agent': 'Mozilla/5.0 (compatible; AniomaNewsTracker/1.0)'
+                    "User-Agent": "Mozilla/5.0 (AniomaNewsTracker/1.0)"
                 }
-                
-                async with session.get(self.config['url'], headers=headers) as response:
+                async with session.get(url, headers=headers) as response:
                     if response.status == 200:
                         html = await response.text()
                         return self.parse_content(html)
                     else:
-                        logger.error(f"Failed to fetch {self.config['url']}: {response.status}")
+                        logger.error(f"Failed to fetch {url}: {response.status}")
                         return []
+
         except Exception as e:
-            logger.error(f"Error fetching website {self.config['url']}: {e}")
+            logger.error(f"Error fetching website {self.config.get('url')}: {e}")
             return []
+
     
     def parse_content(self, html: str) -> List[Dict]:
         soup = BeautifulSoup(html, 'html.parser')
         articles = []
         
         # Look for article elements (customize based on website structure)
-        article_elements = soup.find_all(['article', 'div.article', 'div.post', 'div.blog-post'])
+        article_elements = soup.find_all("article") or soup.find_all("a", href=True)
+
         
         for element in article_elements:
             try:
@@ -123,6 +132,36 @@ class WebsiteMonitor(BaseMonitor):
         """Extract author from element"""
         author_elem = element.find(['span.author', 'div.author', 'a.author'])
         return author_elem.text.strip() if author_elem else ""
+    
+
+
+class RSSMonitor(BaseMonitor):
+    async def fetch_content(self) -> List[Dict]:
+        try:
+            feed = feedparser.parse(self.config["url"])
+            items = []
+
+            for entry in feed.entries[:20]:
+                items.append({
+                    "title": entry.get("title", ""),
+                    "content": entry.get("summary", ""),
+                    "url": entry.get("link", ""),
+                    "published_date": datetime.now(),
+                    "author": entry.get("source", {}).get("title", ""),
+                    "platform_specific_data": {
+                        "source": "google_news",
+                        "platform_hint": self.config.get("platform_hint"),
+                    },
+                })
+
+            return items
+
+        except Exception as e:
+            logger.error(f"RSS fetch error: {e}")
+            return []
+
+
+
 
 class TwitterMonitor(BaseMonitor):
     """Monitor Twitter/X for mentions"""
@@ -196,63 +235,52 @@ class TwitterMonitor(BaseMonitor):
         except Exception as e:
             logger.error(f"Error fetching Twitter content: {e}")
             return []
-
-class RedditMonitor(BaseMonitor):
-    """Monitor Reddit for discussions"""
-    
-    def __init__(self, source_config: Dict):
-        super().__init__(source_config)
-        self.reddit = self._initialize_reddit()
-    
-    def _initialize_reddit(self):
-        """Initialize Reddit API"""
-        praw = safe_import("praw")
-        if not praw:
-            return None
         
-        if not self.config.get("client_id"):
-            logger.warning("[Media Intelligence] Reddit credentials missing.")
-            return None
+class TikTokMonitor(BaseMonitor):
+    """Monitor TikTok accounts or hashtag pages"""
 
-        try:
-            reddit = praw.Reddit(
-                client_id=self.config.get('client_id'),
-                client_secret=self.config.get('client_secret'),
-                user_agent="AniomaNewsTracker/1.0"
-            )
-            return reddit
-        except Exception as e:
-            logger.error(f"Failed to initialize Reddit API: {e}")
-            return None
-    
     async def fetch_content(self) -> List[Dict]:
-        if not self.reddit:
-            return []
-        
         try:
             posts = []
-            subreddit_name = self.config.get('subreddit', 'all')
-            subreddit = self.reddit.subreddit(subreddit_name)
-            
-            for submission in subreddit.new(limit=50):
+
+            username = self.config.get("username")
+            hashtag = self.config.get("hashtag")
+
+            # Choose ONE strategy per source
+            if not username and not hashtag:
+                logger.warning("[Media Intelligence] TikTok source missing username or hashtag.")
+                return []
+
+            # Lazy import (prevents memory crash if lib missing)
+            tiktokapi = safe_import("tiktokapipy")
+            if not tiktokapi:
+                return []
+
+            # ⚠️ Placeholder logic — TikTok scraping is fragile
+            # Replace with your chosen lib’s real calls
+            videos = []  # fetched videos go here
+
+            for video in videos[:20]:
                 posts.append({
-                    'title': submission.title,
-                    'content': submission.selftext,
-                    'url': f"https://reddit.com{submission.permalink}",
-                    'published_date': datetime.fromtimestamp(submission.created_utc),
-                    'author': str(submission.author),
-                    'platform_specific_data': {
-                        'subreddit': submission.subreddit.display_name,
-                        'score': submission.score,
-                        'num_comments': submission.num_comments
-                    }
+                    "title": video.get("desc", "")[:200],
+                    "content": video.get("desc", ""),
+                    "url": video.get("share_url", ""),
+                    "published_date": video.get("create_time", datetime.now()),
+                    "author": video.get("author", username or hashtag),
+                    "platform_specific_data": {
+                        "likes": video.get("like_count", 0),
+                        "comments": video.get("comment_count", 0),
+                        "shares": video.get("share_count", 0),
+                        "platform": "tiktok",
+                    },
                 })
-            
+
             return posts
-            
+
         except Exception as e:
-            logger.error(f"Error fetching Reddit content: {e}")
+            logger.error(f"Error fetching TikTok content: {e}")
             return []
+        
 
 class FacebookMonitor(BaseMonitor):
     """Monitor Facebook pages and groups"""
@@ -296,69 +324,7 @@ class FacebookMonitor(BaseMonitor):
             logger.error(f"Error fetching Facebook content: {e}")
             return []
 
-class YouTubeMonitor(BaseMonitor):
-    """Monitor YouTube for relevant videos"""
-    
-    async def fetch_content(self) -> List[Dict]:
-        try:
-            # YouTube Data API v3 integration
-            discovery = safe_import("googleapiclient.discovery")
-            if not discovery:
-                return []
-            
-            if not self.config.get("api_key"):
-                logger.warning("[Media Intelligence] YouTube API key missing.")
-                return []
 
-            
-            api_key = self.config.get('api_key')
-            channel_id = self.config.get('channel_id')
-            
-            if not api_key or not channel_id:
-                return []
-            
-            youtube = discovery.build("youtube", "v3", developerKey=api_key)
-            
-            # Get channel uploads playlist
-            request = youtube.channels().list(
-                part='contentDetails',
-                id=channel_id
-            )
-            response = request.execute()
-            
-            if not response['items']:
-                return []
-            
-            uploads_playlist_id = response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
-            
-            # Get videos from playlist
-            request = youtube.playlistItems().list(
-                part='snippet',
-                playlistId=uploads_playlist_id,
-                maxResults=50
-            )
-            response = request.execute()
-            
-            videos = []
-            for item in response['items']:
-                snippet = item['snippet']
-                videos.append({
-                    'title': snippet['title'],
-                    'content': snippet['description'],
-                    'url': f"https://youtube.com/watch?v={snippet['resourceId']['videoId']}",
-                    'published_date': snippet['publishedAt'],
-                    'author': snippet['channelTitle'],
-                    'platform_specific_data': {
-                        'video_id': snippet['resourceId']['videoId'],
-                        'channel_id': channel_id
-                    }
-                })
-            
-            return videos
-            
-        except Exception as e:
-            logger.error(f"Error fetching YouTube content: {e}")
-            return []
 
 class MonitorFactory:
     """Factory to create policy-governed platform monitors"""
@@ -398,11 +364,11 @@ class MonitorFactory:
                 return None
 
         monitors = {
-            "website": WebsiteMonitor,
-            "twitter": TwitterMonitor,
-            "facebook": FacebookMonitor,
-            "reddit": RedditMonitor,
-            "youtube": YouTubeMonitor,
+            SourceType.WEBSITE: WebsiteMonitor,
+            SourceType.TWITTER: TwitterMonitor,
+            SourceType.FACEBOOK: FacebookMonitor,
+            SourceType.TIKTOK: TikTokMonitor,
+            SourceType.RSS: RSSMonitor,
         }
 
         monitor_class = monitors.get(source_type)

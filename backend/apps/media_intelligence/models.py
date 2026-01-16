@@ -2,24 +2,15 @@
 from django.db import models
 from django.utils import timezone
 import uuid
+from apps.media_intelligence.constants import SourceType
+
 
 class NewsSource(models.Model):
-    SOURCE_TYPES = [
-        ('website', 'Website / RSS'),
-        ('twitter', 'Twitter / X'),
-        ('facebook', 'Facebook'),
-        ('instagram', 'Instagram'),
-        ('reddit', 'Reddit'),
-        ('youtube', 'YouTube'),
-        ('telegram', 'Telegram'),
-        ('linkedin', 'LinkedIn'),
-        ('news_aggregator', 'News Aggregator'),
-    ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     url = models.URLField(max_length=500)
-    source_type = models.CharField(max_length=50, choices=SOURCE_TYPES)
+    source_type = models.CharField(max_length=50, choices=SourceType.choices)
     platform_specific_id = models.CharField(max_length=255, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     check_interval = models.IntegerField(default=15)  # minutes

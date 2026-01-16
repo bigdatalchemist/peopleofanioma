@@ -43,9 +43,21 @@ class ContentAggregator:
     async def _fetch_source_content(self, source: NewsSource) -> List[Dict]:
         """Fetch content from a single source"""
         try:
-            platform_cfg = settings.MEDIA_INTELLIGENCE_PLATFORMS.get(source.source_type, {})
-            if not platform_cfg.get("enabled", False):
+            platform_cfg = settings.MEDIA_INTELLIGENCE_PLATFORMS.get(source.source_type)
+
+            if not platform_cfg:
+                logger.error(
+                    f"[Media Intelligence] Unknown source_type '{source.source_type}' "
+                    f"for source '{source.name}' ({source.id})"
+                )
                 return []
+
+            if not platform_cfg.get("enabled", False):
+                logger.info(
+                    f"[Media Intelligence] Platform '{source.source_type}' disabled by policy."
+                )
+                return []
+
             monitor = MonitorFactory.create_monitor(
                 source.source_type,
                 {
