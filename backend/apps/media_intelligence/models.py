@@ -5,8 +5,8 @@ import uuid
 
 class NewsSource(models.Model):
     SOURCE_TYPES = [
-        ('website', 'Website/Blog'),
-        ('twitter', 'Twitter/X'),
+        ('website', 'Website / RSS'),
+        ('twitter', 'Twitter / X'),
         ('facebook', 'Facebook'),
         ('instagram', 'Instagram'),
         ('reddit', 'Reddit'),
