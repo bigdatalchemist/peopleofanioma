@@ -7,6 +7,7 @@ from django.conf import settings
 from apps.media_intelligence.analyzers.semantic import AniomaSemanticAnalyzer
 from apps.media_intelligence.crawler.platforms import MonitorFactory
 from apps.media_intelligence.models import NewsSource
+from asgiref.sync import sync_to_async
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +21,11 @@ class ContentAggregator:
     async def fetch_all_sources(self) -> List[Dict]:
         """Fetch content from all active sources"""
         all_content = []
-        active_sources = NewsSource.objects.filter(is_active=True)
-        logger.warning(f"[MEDIA_INTEL DEBUG] Active sources count: {active_sources.count()}")
+        active_sources = await sync_to_async(
+            lambda: list(NewsSource.objects.filter(is_active=True))
+        )()
+
+        logger.warning(f"[MEDIA_INTEL DEBUG] Active sources count: {len(active_sources)}")
         logger.warning(f"[MEDIA_INTEL DEBUG] Source types: {[s.source_type for s in active_sources]}")
         
         tasks = []
@@ -75,7 +79,8 @@ class ContentAggregator:
             
             # Update last checked time
             source.last_checked = timezone.now()
-            source.save(update_fields=['last_checked'])
+            await sync_to_async(source.save)(update_fields=['last_checked'])
+
             
             await monitor.close()
             
