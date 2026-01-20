@@ -1,5 +1,5 @@
 # peopleofanioma/backend/apps/media_intelligence/management/commands/run_media_intelligence.py
-from asyncio import sleep
+import time
 from django.core.management.base import BaseCommand
 import logging
 from apps.media_intelligence.crawler.base import NewsCrawlerService
@@ -91,11 +91,11 @@ class Command(BaseCommand):
                 self.stdout.write(f'   Results: {results["new_items_stored"]} new items')
                 
                 # Wait for next cycle
-                sleep(interval)
+                time.sleep(interval)
                 
             except KeyboardInterrupt:
                 self.stdout.write(self.style.WARNING('\n👋 Stopping news tracker...'))
                 break
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f'Error in continuous run: {e}'))
-                sleep(60)  # Wait a minute before retrying
+                time.sleep(60)  # Wait a minute before retrying
