@@ -44,22 +44,32 @@ class NewsCrawlerService:
         }
         
         try:
-            # 1. Fetch content from all sources
-            logger.info("Fetching content from all sources...")
+            # 🔎 STEP 1 — before fetch
+            logger.error("STEP 1: before fetch_all_sources")
+
             all_content = await self.aggregator.fetch_all_sources()
+
+            # 🔎 STEP 2 — after fetch
+            logger.error("STEP 2: after fetch_all_sources")
+
             results['total_fetched'] = len(all_content)
-            
-            # 2. Process and filter content
-            logger.info("Processing and filtering content...")
+
+            # 🔎 STEP 3 — before semantic processing
+            logger.error("STEP 3: before process_and_filter_content")
+
             relevant_items = self.aggregator.process_and_filter_content(all_content)
+
+            # 🔎 STEP 4 — after semantic processing
+            logger.error("STEP 4: after process_and_filter_content")
+
             results['relevant_found'] = len(relevant_items)
-            
+
             # 3. Deduplicate
             unique_items = self.aggregator.deduplicate_content(relevant_items)
-            
-            # 4. Store in database and send notifications
-            logger.info(f"Storing {len(unique_items)} unique relevant items...")
-            
+
+            logger.error("STEP 5: after deduplication")
+
+            # 4. Store + notify
             for item in unique_items:
                 try:
                     saved_item = await sync_to_async(
@@ -69,26 +79,30 @@ class NewsCrawlerService:
 
                     if saved_item:
                         results['new_items_stored'] += 1
-                        
-                        # Send notification
-                        should_notify = await sync_to_async(self._should_send_notification)(saved_item)
+
+                        should_notify = await sync_to_async(
+                            self._should_send_notification
+                        )(saved_item)
+
                         if should_notify:
                             await self._send_notification(saved_item)
                             results['notifications_sent'] += 1
-                            
+
                 except Exception as e:
                     error_msg = f"Error processing item {item.get('url', 'unknown')}: {e}"
                     logger.error(error_msg)
                     results['errors'].append(error_msg)
-            
-            logger.info(f"Crawling cycle completed: {results}")
+
+            logger.error("STEP 6: end of crawling cycle")
             return results
-            
+
         except Exception as e:
+            logger.error("❌ CRASH BEFORE STEP COMPLETION")
             error_msg = f"Error in crawling cycle: {e}"
             logger.error(error_msg)
             results['errors'].append(error_msg)
             return results
+
     
     def _process_and_store_item(self, item_data: Dict) -> Optional[TrackedNewsItem]:
         """Process and store a single news item"""
