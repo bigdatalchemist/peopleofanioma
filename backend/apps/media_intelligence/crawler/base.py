@@ -69,7 +69,11 @@ class NewsCrawlerService:
             results['relevant_found'] = len(relevant_items)
 
             # 3. Deduplicate
-            unique_items = self.aggregator.deduplicate_content(relevant_items)
+            unique_items = await sync_to_async(
+                self.aggregator.deduplicate_content,
+                thread_sensitive=True
+            )(relevant_items)
+
 
             logger.error("STEP 5: after deduplication")
 
@@ -85,8 +89,10 @@ class NewsCrawlerService:
                         results['new_items_stored'] += 1
 
                         should_notify = await sync_to_async(
-                            self._should_send_notification
+                            self._should_send_notification,
+                            thread_sensitive=True
                         )(saved_item)
+
 
                         if should_notify:
                             await self._send_notification(saved_item)
