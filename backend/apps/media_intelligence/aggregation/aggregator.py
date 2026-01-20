@@ -1,5 +1,4 @@
 # apps/media_intelligence/aggregation/aggregator.py
-import asyncio
 from typing import List, Dict
 import logging
 from django.utils import timezone
@@ -7,7 +6,6 @@ from django.conf import settings
 from apps.media_intelligence.analyzers.semantic import AniomaSemanticAnalyzer
 from apps.media_intelligence.crawler.platforms import MonitorFactory
 from apps.media_intelligence.models import NewsSource
-from asgiref.sync import sync_to_async
 
 logger = logging.getLogger(__name__)
 
@@ -18,12 +16,10 @@ class ContentAggregator:
         self.semantic_analyzer = AniomaSemanticAnalyzer()
         self.monitors = {}
         
-    async def fetch_all_sources(self) -> List[Dict]:
+    def fetch_all_sources(self) -> List[Dict]:
         """Fetch content from all active sources"""
         all_content = []
-        active_sources = await sync_to_async(
-            lambda: list(NewsSource.objects.filter(is_active=True))
-        )()
+        active_sources = NewsSource.objects.filter(is_active=True)
 
         logger.warning(f"[MEDIA_INTEL DEBUG] Active sources count: {len(active_sources)}")
         logger.warning(f"[MEDIA_INTEL DEBUG] Source types: {[s.source_type for s in active_sources]}")
@@ -33,7 +29,10 @@ class ContentAggregator:
             tasks.append(self._fetch_source_content(source))
         
         # Fetch concurrently
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        results = []
+        for source in active_sources:
+            results.append(self._fetch_source_content(source))
+
         
         for result in results:
             if isinstance(result, Exception):
@@ -44,7 +43,7 @@ class ContentAggregator:
         
         return all_content
     
-    async def _fetch_source_content(self, source: NewsSource) -> List[Dict]:
+    def _fetch_source_content(self, source: NewsSource) -> List[Dict]:
         """Fetch content from a single source"""
         try:
             platform_cfg = settings.MEDIA_INTELLIGENCE_PLATFORMS.get(source.source_type)
@@ -75,14 +74,14 @@ class ContentAggregator:
                 logger.warning(f"No monitor available for source type: {source.source_type}")
                 return []
             
-            content = await monitor.fetch_content()
+            content = monitor.fetch_content()
             
             # Update last checked time
             source.last_checked = timezone.now()
-            await sync_to_async(source.save)(update_fields=['last_checked'])
+            source.save(update_fields=['last_checked'])
 
             
-            await monitor.close()
+            monitor.close()
             
             # Add source metadata
             for item in content:

@@ -1,6 +1,6 @@
 # peopleofanioma/backend/apps/media_intelligence/management/commands/run_media_intelligence.py
+from asyncio import sleep
 from django.core.management.base import BaseCommand
-import asyncio
 import logging
 from apps.media_intelligence.crawler.base import NewsCrawlerService
 from django.utils import timezone
@@ -47,15 +47,15 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(
                 f'Running in continuous mode (checking every {interval/60} minutes)'
             ))
-            asyncio.run(self.run_continuously(interval))
+            self.run_continuously(interval)
         else:
-            asyncio.run(self.run_once())
+            self.run_once()
     
-    async def run_once(self):
+    def run_once(self):
         """Run a single crawling cycle"""
         try:
             service = NewsCrawlerService()
-            results = await service.run_crawling_cycle()
+            results = service.run_crawling_cycle()
             
             self.stdout.write(self.style.SUCCESS(
                 f'✅ Crawling completed:'
@@ -75,9 +75,8 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error: {e}'))
     
-    async def run_continuously(self, interval: int):
+    def run_continuously(self, interval: int):
         """Run crawling continuously with specified interval"""
-        import asyncio
         
         service = NewsCrawlerService()
         
@@ -87,16 +86,16 @@ class Command(BaseCommand):
                     f'\n🔄 Starting crawling cycle at {timezone.now()}'
                 ))
                 
-                results = await service.run_crawling_cycle()
+                results = service.run_crawling_cycle()
                 
                 self.stdout.write(f'   Results: {results["new_items_stored"]} new items')
                 
                 # Wait for next cycle
-                await asyncio.sleep(interval)
+                sleep(interval)
                 
             except KeyboardInterrupt:
                 self.stdout.write(self.style.WARNING('\n👋 Stopping news tracker...'))
                 break
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f'Error in continuous run: {e}'))
-                await asyncio.sleep(60)  # Wait a minute before retrying
+                sleep(60)  # Wait a minute before retrying

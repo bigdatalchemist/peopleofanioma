@@ -1,7 +1,6 @@
 # backend/apps/media_intelligence/crawler/base.py
 from datetime import timedelta
 from typing import Optional
-import asyncio
 import logging
 from datetime import datetime
 from typing import List, Dict
@@ -13,7 +12,6 @@ from ..aggregation.aggregator import ContentAggregator
 from ..notifications.manager import NotificationManager
 from ..analyzers.semantic import AniomaSemanticAnalyzer
 from django.db import IntegrityError
-from asgiref.sync import sync_to_async
 from apps.media_intelligence.intelligence.scoring import compute_confidence_score
 from apps.media_intelligence.intelligence.severity import classify_severity
 from apps.media_intelligence.notifications.policy import is_notification_eligible
@@ -31,7 +29,7 @@ class NewsCrawlerService:
         self.notification_manager = NotificationManager()
         self.semantic_analyzer = AniomaSemanticAnalyzer()
         
-    async def run_crawling_cycle(self) -> Dict:
+    def run_crawling_cycle(self) -> Dict:
         """Run one complete crawling cycle"""
         logger.info("Starting news crawling cycle")
         
@@ -47,7 +45,7 @@ class NewsCrawlerService:
             # 🔎 STEP 1 — before fetch
             logger.error("STEP 1: before fetch_all_sources")
 
-            all_content = await self.aggregator.fetch_all_sources()
+            all_content = self.aggregator.fetch_all_sources()
 
             # 🔎 STEP 2 — after fetch
             logger.error("STEP 2: after fetch_all_sources")
@@ -57,10 +55,7 @@ class NewsCrawlerService:
             # 🔎 STEP 3 — before semantic processing
             logger.error("STEP 3: before process_and_filter_content")
 
-            relevant_items = await sync_to_async(
-                self.aggregator.process_and_filter_content,
-                thread_sensitive=True
-            )(all_content)
+            relevant_items = self.aggregator.process_and_filter_content(all_content)
 
 
             # 🔎 STEP 4 — after semantic processing
@@ -69,10 +64,7 @@ class NewsCrawlerService:
             results['relevant_found'] = len(relevant_items)
 
             # 3. Deduplicate
-            unique_items = await sync_to_async(
-                self.aggregator.deduplicate_content,
-                thread_sensitive=True
-            )(relevant_items)
+            unique_items = self.aggregator.deduplicate_content(relevant_items)
 
 
             logger.error("STEP 5: after deduplication")
@@ -80,22 +72,15 @@ class NewsCrawlerService:
             # 4. Store + notify
             for item in unique_items:
                 try:
-                    saved_item = await sync_to_async(
-                        self._process_and_store_item,
-                        thread_sensitive=True
-                    )(item)
+                    saved_item = self._process_and_store_item(item)
 
                     if saved_item:
                         results['new_items_stored'] += 1
 
-                        should_notify = await sync_to_async(
-                            self._should_send_notification,
-                            thread_sensitive=True
-                        )(saved_item)
-
+                        should_notify = self._should_send_notification(saved_item)
 
                         if should_notify:
-                            await self._send_notification(saved_item)
+                            self._send_notification(saved_item)
                             results['notifications_sent'] += 1
 
                 except Exception as e:
@@ -217,7 +202,7 @@ class NewsCrawlerService:
         
         return True
     
-    async def _send_notification(self, news_item: TrackedNewsItem):
+    def _send_notification(self, news_item: TrackedNewsItem):
         """Send notification for a news item"""
         try:
             # Prepare notification data

@@ -1,5 +1,4 @@
 # backend/apps/media_intelligence/crawler/platforms.py
-import asyncio
 import aiohttp
 import requests
 from bs4 import BeautifulSoup
@@ -36,7 +35,7 @@ class BaseMonitor:
         self.config = source_config
         self.session = None
     
-    async def fetch_content(self) -> List[Dict]:
+    def fetch_content(self) -> List[Dict]:
         """Fetch content from the platform"""
         raise NotImplementedError
     
@@ -44,26 +43,26 @@ class BaseMonitor:
         """Parse raw content into structured format"""
         raise NotImplementedError
     
-    async def close(self):
+    def close(self):
         """Cleanup resources"""
         if self.session:
-            await self.session.close()
+            self.session.close()
 
 class WebsiteMonitor(BaseMonitor):
     """Monitor websites and blogs"""
     
-    async def fetch_content(self) -> List[Dict]:
+    def fetch_content(self) -> List[Dict]:
         try:
             url = self.config["url"]
 
             # Otherwise treat as HTML
-            async with aiohttp.ClientSession() as session:
+            with aiohttp.ClientSession() as session:
                 headers = {
                     "User-Agent": "Mozilla/5.0 (AniomaNewsTracker/1.0)"
                 }
-                async with session.get(url, headers=headers) as response:
+                with session.get(url, headers=headers) as response:
                     if response.status == 200:
-                        html = await response.text()
+                        html = response.text()
                         return self.parse_content(html)
                     else:
                         logger.error(f"Failed to fetch {url}: {response.status}")
@@ -136,7 +135,7 @@ class WebsiteMonitor(BaseMonitor):
 
 
 class RSSMonitor(BaseMonitor):
-    async def fetch_content(self) -> List[Dict]:
+    def fetch_content(self) -> List[Dict]:
         try:
             feed = feedparser.parse(self.config["url"])
             items = []
@@ -194,7 +193,7 @@ class TwitterMonitor(BaseMonitor):
             logger.error(f"Failed to initialize Twitter API: {e}")
             return None
     
-    async def fetch_content(self) -> List[Dict]:
+    def fetch_content(self) -> List[Dict]:
         if not self.api:
             return []
         
@@ -239,7 +238,7 @@ class TwitterMonitor(BaseMonitor):
 class TikTokMonitor(BaseMonitor):
     """Monitor TikTok accounts or hashtag pages"""
 
-    async def fetch_content(self) -> List[Dict]:
+    def fetch_content(self) -> List[Dict]:
         try:
             posts = []
 
@@ -285,7 +284,7 @@ class TikTokMonitor(BaseMonitor):
 class FacebookMonitor(BaseMonitor):
     """Monitor Facebook pages and groups"""
     
-    async def fetch_content(self) -> List[Dict]:
+    def fetch_content(self) -> List[Dict]:
         try:
             # Note: Facebook scraping requires careful handling due to terms of service
             # Consider using official API if possible
