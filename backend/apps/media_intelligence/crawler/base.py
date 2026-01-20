@@ -57,7 +57,11 @@ class NewsCrawlerService:
             # 🔎 STEP 3 — before semantic processing
             logger.error("STEP 3: before process_and_filter_content")
 
-            relevant_items = self.aggregator.process_and_filter_content(all_content)
+            relevant_items = await sync_to_async(
+                self.aggregator.process_and_filter_content,
+                thread_sensitive=True
+            )(all_content)
+
 
             # 🔎 STEP 4 — after semantic processing
             logger.error("STEP 4: after process_and_filter_content")
